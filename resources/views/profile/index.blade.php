@@ -31,7 +31,7 @@
                     @if(Auth::user()->photo && file_exists(public_path('uploads/profiles/' . Auth::user()->photo)))
                       <img src="{{ asset('uploads/profiles/' . Auth::user()->photo) }}" alt="Foto Profil" class="rounded-circle shadow-sm border" width="100" height="100" style="object-fit: cover;">
                     @else
-                      <img src="{{ asset('assets/images/avatar.png') }}" alt="Default Avatar" class="rounded-circle shadow-sm border" width="100" height="100" style="object-fit: cover;">
+                      <img src="{{ asset('assets/images/avatar.jpg') }}" alt="Default Avatar" class="rounded-circle shadow-sm border" width="100" height="100" style="object-fit: cover;">
                     @endif
                   </div>
                   <div class="mt-2">

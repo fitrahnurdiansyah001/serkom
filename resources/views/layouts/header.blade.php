@@ -27,7 +27,7 @@
         <ul class="dropdown-menu shadow border-0 rounded-4 p-2">
           <li><a class="dropdown-item rounded-3 py-2" href="/guru"><i class="bi bi-person-badge me-2 text-success"></i> Data Guru</a></li>
           <li><a class="dropdown-item rounded-3 py-2" href="/siswa"><i class="bi bi-people me-2 text-primary"></i> Data Siswa</a></li>
-          <li><a class="dropdown-item" href="{{ route('users.index') }}">Data users</a></li>
+          <li><a class="dropdown-item" href="{{ route('users.index') }}"><i class="bi bi-person-fill-gear me-2 text-info"></i> Data users</a></li>
         </ul>
       </li>
     </ul>
@@ -35,7 +35,7 @@
     <!-- Profil User & Logout di Kanan -->
     <div class="dropdown">
       <button class="btn btn-light border rounded-pill dropdown-toggle d-flex align-items-center py-1 px-3 shadow-sm" type="button" data-bs-toggle="dropdown">
-        <img src="{{ Auth::user()->photo && file_exists(public_path('uploads/profiles/' . Auth::user()->photo)) ? asset('uploads/profiles/' . Auth::user()->photo) : asset('assets/images/avatar.png') }}" alt="Profile" class="rounded-circle me-2 border" width="30" height="30" style="object-fit: cover;">
+        <img src="{{ Auth::user()->photo && file_exists(public_path('uploads/profiles/' . Auth::user()->photo)) ? asset('uploads/profiles/' . Auth::user()->photo) : asset('assets/images/avatar.jpg') }}" alt="Profile" class="rounded-circle me-2 border" width="30" height="30" style="object-fit: cover;">
         <span class="fw-semibold small text-dark">{{ Auth::user()->name }}</span>
       </button>
       <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-4 p-2 mt-2">

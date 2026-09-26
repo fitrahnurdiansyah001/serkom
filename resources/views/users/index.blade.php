@@ -36,8 +36,9 @@
                 <th class="py-3">Nama Pengguna</th>
                 <th class="py-3">Email</th>
                 <th class="py-3">Hak Akses (Role)</th>
+                <th class="py-3">Status</th>
                 @auth
-                  @if(Auth::user()->role === 'Admin')
+                  @if(Auth::user()->role === 'admin')
                     <th class="py-3 text-center" style="width: 150px;">Aksi</th>
                   @endif
                 @endauth
@@ -51,7 +52,7 @@
                     @if($usr->photo && file_exists(public_path('uploads/profiles/' . $usr->photo)))
                       <img src="{{ asset('uploads/profiles/' . $usr->photo) }}" class="rounded-circle border object-fit-cover" width="40" height="40" alt="Avatar">
                     @else
-                      <img src="{{ asset('assets/images/avatar.png') }}" class="rounded-circle border object-fit-cover" width="40" height="40" alt="Default Avatar">
+                      <img src="{{ asset('assets/images/avatar.jpg') }}" class="rounded-circle border object-fit-cover" width="40" height="40" alt="Default Avatar">
                     @endif
                   </td>
                   <td><span class="fw-bold text-dark">{{ $usr->name }}</span></td>
@@ -61,9 +62,14 @@
                       {{ $usr->role }}
                     </span>
                   </td>
+                  <td>
+                    <span class="badge {{ strtolower($usr->status) == 'active' ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-dark' }} px-3 py-1 rounded-pill text-capitalize">
+                      {{ $usr->status }}
+                    </span>
+                  </td>
                   
                   @auth
-                    @if(Auth::user()->role === 'Admin')
+                    @if(Auth::user()->role === 'admin')
                       <td class="text-center">
                         <div class="d-flex justify-content-center gap-2">
                           <!-- Tombol Edit -->
@@ -86,7 +92,7 @@
 
                 <!-- MODAL EDIT USER -->
                 @auth
-                  @if(Auth::user()->role === 'Admin')
+                  @if(Auth::user()->role === 'admin')
                     <div class="modal fade" id="modalEditUser{{ $usr->id }}" tabindex="-1" aria-hidden="true">
                       <div class="modal-dialog">
                         <div class="modal-content rounded-4 border-0 shadow">
@@ -113,8 +119,11 @@
                                 </select>
                               </div>
                               <div class="mb-3">
-                                <label class="form-label fw-semibold">Kata Sandi Baru (Opsional)</label>
-                                <input type="password" name="password" class="form-control rounded-3" placeholder="Kosongkan jika tidak diubah">
+                                <label class="form-label fw-semibold">Status</label>
+                                <select name="status" class="form-select rounded-3 text-capitalize" required>
+                                  <option value="active" {{ strtolower($usr->status) == 'active' ? 'selected' : '' }}>active</option>
+                                  <option value="non active" {{ strtolower($usr->status) == 'non active' ? 'selected' : '' }}>non active</option>
+                                </select>
                               </div>
                               <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Simpan Perubahan</button>
                             </form>

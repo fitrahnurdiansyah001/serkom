@@ -24,12 +24,14 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|max:255|unique:users,email,' . $id,
             'role' => 'required|in:Admin,Operator',
+            'status' => 'required|in:active,non active',
             'password' => 'nullable|min:8'
         ]);
 
         $user->name = $request->name;
         $user->email = $request->email;
         $user->role = $request->role;
+        $user->status = $request->status;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);

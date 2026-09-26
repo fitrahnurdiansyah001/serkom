@@ -60,7 +60,7 @@ class BeritaController extends Controller
 
         if ($request->hasFile('gambar')) {
             if ($berita->gambar && file_exists(public_path('uploads/berita/' . $berita->gambar))) {
-                unlink(public_path('uploads/berita/' . $berita->gambar));
+                unlink(public_path('uploads/berita/' . $berita->gambar));                   
             }
 
             $file = $request->file('gambar');

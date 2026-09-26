@@ -18,7 +18,8 @@ return new class extends Migration
             $table->string('photo');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('role', ['admin', 'operator'])->default('operator'); // Tambahkan kolom ini
+            $table->enum('role', ['admin', 'operator'])->default('operator'); 
+            $table->enum('status', ['active', 'non active'])->default('active'); 
             $table->rememberToken();
             $table->timestamps();
         });

@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/galeri', [GaleriController::class, 'index'])->name('galeri.index');
     Route::post('/galeri/store', [GaleriController::class, 'store'])->name('galeri.store');
     Route::delete('/galeri/delete/{id}', [GaleriController::class, 'destroy'])->name('galeri.destroy');
+    Route::put('/galeri/{id}', [GaleriController::class, 'update'])->name('galeri.update');
 
     // Berita
     Route::get('/berita', [BeritaController::class, 'index'])->name('berita.index');

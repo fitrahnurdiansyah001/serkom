@@ -4,17 +4,25 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Ekstrakurikuler;
+use Illuminate\Support\Str;
 
 class EkskulController extends Controller
 {
-    // Menampilkan daftar ekstrakurikuler
     public function index()
     {
-        $eskuls = Ekstrakurikuler::all();
-        return view('ekstrakurikuler.index', compact('eskuls'));
+        $ekstrakurikulers = Ekstrakurikuler::latest()->get();
+
+        $daftarNamaEkskul = $ekstrakurikulers->map(fn($ekstrakurikuler) => $ekstrakurikuler->nama_ekskul);
+
+        return view('ekstrakurikuler.index', compact('ekstrakurikulers', 'daftarNamaEkskul'));
     }
 
-    // Menyimpan data ekstrakurikuler baru (Admin)
+    public function show(string $slug)
+    {
+        $ekstrakurikuler = Ekstrakurikuler::where('slug', $slug)->firstOrFail();
+        return view('ekstrakurikuler.show', compact('ekstrakurikuler'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -28,25 +36,37 @@ class EkskulController extends Controller
         $fotoName = null;
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
-            $fotoName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/eskul'), $fotoName);
+            $destinationPath = public_path('uploads/ekstrakurikuler');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $fotoName = 'ekskul_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($destinationPath, $fotoName);
+        }
+        
+        $slugBaru = Str::slug($request->nama_ekskul);
+
+        if(Ekstrakurikuler::where('slug', $slugBaru)->exists()) {
+             $slugBaru = $slugBaru . '-' . time();
         }
 
         Ekstrakurikuler::create([
             'nama_ekskul' => $request->nama_ekskul,
-            'pembina' => $request->pembina,
-            'jadwal' => $request->jadwal,
-            'deskripsi' => $request->deskripsi,
-            'foto' => $fotoName
+            'slug'        => $slugBaru, // Menyimpan slug
+            'pembina'     => $request->pembina,
+            'jadwal'      => $request->jadwal,
+            'deskripsi'   => $request->deskripsi,
+            'foto'        => $fotoName
         ]);
 
-        return redirect()->route('ekskul.index')->with('success', 'Ekstrakurikuler baru berhasil ditambahkan!');
+        return redirect()->route('ekskul.index')->with('success', 'Data ekstrakurikuler berhasil ditambahkan!');
     }
 
-    // Memperbarui data ekstrakurikuler (Admin)
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
-        $eskul = Ekstrakurikuler::findOrFail($id);
+        $ekskul = Ekstrakurikuler::findOrFail($id);
 
         $request->validate([
             'nama_ekskul' => 'required|string|max:255',
@@ -57,34 +77,53 @@ class EkskulController extends Controller
         ]);
 
         if ($request->hasFile('foto')) {
-            if ($eskul->foto && file_exists(public_path('uploads/eskul/' . $eskul->foto))) {
-                unlink(public_path('uploads/eskul/' . $eskul->foto));
+            // Hapus foto lama jika ada
+            if ($ekskul->foto && file_exists(public_path('uploads/ekstrakurikuler/' . $ekskul->foto))) {
+                @unlink(public_path('uploads/ekstrakurikuler/' . $ekskul->foto));
             }
 
             $file = $request->file('foto');
-            $fotoName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/eskul'), $fotoName);
-            $eskul->foto = $fotoName;
+            $destinationPath = public_path('uploads/ekstrakurikuler');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $fotoName = 'ekskul_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move($destinationPath, $fotoName);
+
+            $ekskul->foto = $fotoName;
         }
 
-        $eskul->nama_ekskul = $request->nama_ekskul;
-        $eskul->pembina = $request->pembina;
-        $eskul->jadwal = $request->jadwal;
-        $eskul->deskripsi = $request->deskripsi;
-        $eskul->save();
+        if ($ekskul->nama_ekskul != $request->nama_ekskul) {
+            $slugBaru = Str::slug($request->nama_ekskul);
+            
+            // PERBAIKAN: Menggunakan getKeyName() agar mendeteksi nama primary key secara otomatis
+            if(Ekstrakurikuler::where('slug', $slugBaru)->where($ekskul->getKeyName(), '!=', $id)->exists()){
+                 $slugBaru = $slugBaru . '-' . time();
+            }
+            $ekskul->slug = $slugBaru;
+        }
+
+        $ekskul->nama_ekskul = $request->nama_ekskul;
+        $ekskul->pembina = $request->pembina;
+        $ekskul->jadwal = $request->jadwal;
+        $ekskul->deskripsi = $request->deskripsi;
+        $ekskul->save();
 
         return redirect()->route('ekskul.index')->with('success', 'Data ekstrakurikuler berhasil diperbarui!');
     }
 
-    // Menghapus data ekstrakurikuler (Admin)
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        $eskul = Ekstrakurikuler::findOrFail($id);
-        if ($eskul->foto && file_exists(public_path('uploads/eskul/' . $eskul->foto))) {
-            unlink(public_path('uploads/eskul/' . $eskul->foto));
-        }
-        $eskul->delete();
+        $ekskul = Ekstrakurikuler::findOrFail($id);
 
-        return redirect()->route('ekskul.index')->with('success', 'Ekstrakurikuler berhasil dihapus!');
+        if ($ekskul->foto && file_exists(public_path('uploads/ekstrakurikuler/' . $ekskul->foto))) {
+            @unlink(public_path('uploads/ekstrakurikuler/' . $ekskul->foto));
+        }
+
+        $ekskul->delete();
+
+        return redirect()->route('ekskul.index')->with('success', 'Data ekstrakurikuler berhasil dihapus!');
     }
 }

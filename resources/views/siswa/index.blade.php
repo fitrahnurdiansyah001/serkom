@@ -1,171 +1,331 @@
 @extends('layouts.app')
 
-@section('title', 'Data Siswa - Web Schools')
+@section('title', 'Data Siswa - SDIT Al-Hikmah')
 
 @section('content')
-    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="page-title fw-bold">Data Siswa / Murid</h1>
-        <p class="page-subtitle text-muted">Daftar seluruh siswa aktif yang terdaftar di SMAN 1 Web Schools.</p>
-      </div>
-      
-      <!-- Tombol Tambah (Admin/Operator) -->
-      @auth
-        <div>
-          <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahSiswa">
-            <i class="bi bi-person-plus me-2"></i> Tambah Data Siswa
-          </button>
+    <style>
+        .card-modern {
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+            border-radius: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.25s ease-in-out;
+        }
+
+        .table-responsive {
+            border-radius: 1rem;
+        }
+
+        .table {
+            color: var(--bs-body-color);
+            background-color: var(--bs-body-bg);
+            vertical-align: middle;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+
+        html[data-bs-theme="dark"] .modal-content {
+            background-color: #1e293b !important;
+            color: #f8f9fa !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        html[data-bs-theme="dark"] .form-control,
+        html[data-bs-theme="dark"] .form-select {
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
+            color: #f8f9fa !important;
+        }
+    </style>
+
+    <!-- BANNER UTAMA -->
+    <div class="card border-0 text-white mb-4 shadow-sm"
+        style="background: linear-gradient(135deg, #0F8B44 0%, #0c7338 100%); border-radius: 1rem;">
+        <div class="card-body p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <h3 class="fw-bold mb-1 text-white">Manajemen Data Siswa</h3>
+                <p class="mb-0 text-white-50 fs-6">Kelola data profil siswa, NISN, tahun masuk, serta jenis kelamin dalam
+                    format tabel.</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <button type="button"
+                    class="btn btn-light px-4 py-2 fw-semibold shadow-sm rounded-pill d-flex align-items-center"
+                    style="color: #0F8B44;" data-bs-toggle="modal" data-bs-target="#modalTambahSiswa">
+                    <i class="bi bi-person-plus-fill me-2"></i> Tambah Siswa Baru
+                </button>
+            </div>
         </div>
-      @endauth
     </div>
 
-    @if(session('success'))
-      <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
-        <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
+    <!-- FILTER & PENCARIAN -->
+    <div class="card card-modern mb-4 p-3">
+        <form action="{{ route('siswa.index') }}" method="GET" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold small mb-1">Filter Jenis Kelamin:</label>
+                <select name="jenis_kelamin" class="form-select rounded-pill" onchange="this.form.submit()">
+                    <option value="">Semua Jenis Kelamin</option>
+                    <option value="Laki-laki" {{ request('jenis_kelamin') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki
+                    </option>
+                    <option value="Perempuan" {{ request('jenis_kelamin') == 'Perempuan' ? 'selected' : '' }}>Perempuan
+                    </option>
+                </select>
+            </div>
+            @if (request('jenis_kelamin'))
+                <div class="col-md-3 d-flex align-items-end mt-4 mt-md-0">
+                    <a href="{{ route('siswa.index') }}" class="btn btn-outline-secondary rounded-pill px-4 btn-sm">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Filter
+                    </a>
+                </div>
+            @endif
+        </form>
+    </div>
+
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
-    <!-- Tabel Data Siswa -->
-    <div class="card border shadow-sm rounded-4 overflow-hidden mb-5">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="py-3 px-4">No</th>
-                <th class="py-3">NISN</th>
-                <th class="py-3">Nama Siswa</th>
-                <th class="py-3">Jenis Kelamin</th>
-                <th class="py-3">Tahun Masuk</th>
-                @auth
-                  <th class="py-3 text-center" style="width: 150px;">Aksi</th>
-                @endauth
-              </tr>
-            </thead>
-            <tbody>
-              @forelse($siswas as $index => $siswa)
-                <tr>
-                  <td class="px-4 text-muted">{{ $index + 1 }}</td>
-                  <td><span class="fw-semibold text-secondary">{{ $siswa->nisn }}</span></td>
-                  <td>
-                    <div class="fw-bold text-dark">{{ $siswa->nama_siswa }}</div>
-                  </td>
-                  <td>
-                    <span class="badge {{ $siswa->jenis_kelamin == 'Laki-Laki' ? 'bg-info bg-opacity-10 text-info' : 'bg-danger bg-opacity-10 text-danger' }} px-3 py-1 rounded-pill">
-                      {{ $siswa->jenis_kelamin }}
-                    </span>
-                  </td>
-                  <td>{{ $siswa->tahun_masuk }}</td>
-                  
-                  @auth
-                    <td class="text-center">
-                      <div class="d-flex justify-content-center gap-2">
-                        <!-- Tombol Edit Modal -->
-                        <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" data-bs-toggle="modal" data-bs-target="#modalEditSiswa{{ $siswa->id_siswa }}" title="Edit">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <!-- Tombol Hapus -->
-                        <form action="{{ route('siswa.destroy', $siswa->id_siswa) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus data siswa ini?')">
-                          @csrf
-                          @method('DELETE')
-                          <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Hapus">
-                            <i class="bi bi-trash"></i>
-                          </button>
-                        </form>
-                      </div>
-                    </td>
-                  @endauth
-                </tr>
+    <!-- TABEL DATA SISWA -->
+    <div class="card card-modern mb-5">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-body-tertiary text-uppercase fs-7">
+                        <tr>
+                            <th class="py-3 px-4 text-body-secondary fw-semibold" style="width: 5%;">No</th>
+                            <th class="py-3 px-3 text-body-secondary fw-semibold">Nama Lengkap</th>
+                            <th class="py-3 px-3 text-body-secondary fw-semibold">NISN</th>
+                            <th class="py-3 px-3 text-body-secondary fw-semibold">Tahun Masuk</th>
+                            <th class="py-3 px-3 text-body-secondary fw-semibold">Jenis Kelamin</th>
+                            <th class="py-3 px-4 text-center text-body-secondary fw-semibold" style="width: 25%;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        @forelse($siswas ?? [] as $index => $siswa)
+                            @php
+                                $idSiswa = $siswa->id_siswa ?? $siswa->id;
+                            @endphp
+                            <tr>
+                                <td class="px-4 fw-semibold text-body-secondary">{{ $index + 1 }}</td>
+                                <td class="px-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold me-2"
+                                            style="width: 35px; height: 35px; font-size: 0.85rem; background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
+                                            {{ strtoupper(substr($siswa->nama_siswa, 0, 1)) }}
+                                        </div>
+                                        <span class="fw-bold text-body">{{ $siswa->nama_siswa }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-3 font-monospace small text-secondary">{{ $siswa->nisn ?? '-' }}</td>
+                                <td class="px-3">
+                                    <span
+                                        class="badge bg-secondary bg-opacity-10 text-secondary border border-secondary border-opacity-10 rounded-pill px-3 py-1">
+                                        {{ $siswa->tahun_masuk ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-3">
+                                    <span class="badge rounded-pill px-3 py-1"
+                                        style="background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
+                                        {{ $siswa->jenis_kelamin ?? '-' }}
+                                    </span>
+                                </td>
+                                <td class="px-4 text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('siswa.show', $siswa->slug) }}"
+                                            class="btn btn-sm rounded-pill px-3 fw-semibold shadow-sm text-white"
+                                            style="background-color: #0F8B44;">
+                                            <i class="bi bi-eye me-1"></i> Detail
+                                        </a>
 
-                <!-- MODAL EDIT SISWA -->
-                @auth
-                  <div class="modal fade" id="modalEditSiswa{{ $siswa->id_siswa }}" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content rounded-4 border-0 shadow">
-                        <div class="modal-header border-bottom-0 pt-4 px-4">
-                          <h5 class="modal-title fw-bold">Edit Data Siswa</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body px-4 pb-4">
-                          <form action="{{ route('siswa.update', $siswa->id_siswa) }}" method="POST">
-                            @csrf
-                            <div class="mb-3">
-                              <label class="form-label fw-semibold">NISN</label>
-                              <input type="text" name="nisn" class="form-control rounded-3" maxlength="10" value="{{ $siswa->nisn }}" required>
-                            </div>
-                            <div class="mb-3">
-                              <label class="form-label fw-semibold">Nama Lengkap Siswa</label>
-                              <input type="text" name="nama_siswa" class="form-control rounded-3" maxlength="40" value="{{ $siswa->nama_siswa }}" required>
-                            </div>
-                            <div class="mb-3">
-                              <label class="form-label fw-semibold">Jenis Kelamin</label>
-                              <select name="jenis_kelamin" class="form-select rounded-3" required>
-                                <option value="Laki-Laki" {{ $siswa->jenis_kelamin == 'Laki-Laki' ? 'selected' : '' }}>Laki-Laki</option>
-                                <option value="Perempuan" {{ $siswa->jenis_kelamin == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
-                              </select>
-                            </div>
-                            <div class="mb-3">
-                              <label class="form-label fw-semibold">Tahun Masuk</label>
-                              <input type="number" name="tahun_masuk" class="form-control rounded-3" value="{{ $siswa->tahun_masuk }}" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Simpan Perubahan</button>
-                          </form>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                @endauth
+                                        <button type="button" class="btn btn-sm rounded-pill px-3 fw-medium"
+                                            style="border: 1px solid #0F8B44; color: #0F8B44;" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditSiswa{{ $idSiswa }}">
+                                            <i class="bi bi-pencil me-1"></i> Edit
+                                        </button>
 
-              @empty
-                <tr>
-                  <td colspan="6" class="text-center py-5 text-muted">
-                    <i class="bi bi-people display-4 opacity-50 d-block mb-2"></i> Belum ada data siswa yang terdaftar.
-                  </td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
+                                        <form action="{{ route('siswa.destroy', $idSiswa) }}" method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('Yakin ingin menghapus data siswa ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium">
+                                                <i class="bi bi-trash me-1"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- EDIT SISWA -->
+                            <div class="modal fade" id="modalEditSiswa{{ $idSiswa }}" tabindex="-1"
+                                aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content rounded-4 border-0 shadow bg-body">
+                                        <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                                            <h5 class="modal-title fw-bold">Edit Data Siswa</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4 text-start">
+                                            <form action="{{ route('siswa.update', $idSiswa) }}" method="POST">
+                                                @csrf
+                                                @method('PUT')
+                                                <div class="row g-3">
+                                                    <div class="col-12">
+                                                        <label class="form-label fw-semibold small">Nama Lengkap
+                                                            Siswa</label>
+                                                        <input type="text" name="nama_siswa"
+                                                            class="form-control rounded-3"
+                                                            value="{{ $siswa->nama_siswa }}" required>
+                                                    </div>
+                                                    <div class="col-12">
+                                                        <label class="form-label fw-semibold small">NISN</label>
+                                                        <input type="text" name="nisn"
+                                                            class="form-control rounded-3" value="{{ $siswa->nisn }}"
+                                                            required>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold small">Tahun Masuk</label>
+
+                                                        @php
+                                                            $profilSekolah = \App\Models\ProfilSekolah::first();
+                                                            $minTahun =
+                                                                $profilSekolah && $profilSekolah->tahun_berdiri
+                                                                    ? (int) $profilSekolah->tahun_berdiri
+                                                                    : 2000;
+                                                        @endphp
+
+                                                        <input type="number" name="tahun_masuk"
+                                                            class="form-control rounded-3 @error('tahun_masuk') is-invalid @enderror"
+                                                            value="{{ old('tahun_masuk', $siswa->tahun_masuk) }}"
+                                                            min="{{ $minTahun }}" max="{{ date('Y') }}"
+                                                            required>
+
+                                                        <div class="form-text" style="font-size: 0.75rem;">Minimal
+                                                            tahun {{ $minTahun }} (Tahun berdiri sekolah).</div>    
+
+                                                        @error('tahun_masuk')
+                                                            <div class="invalid-feedback">
+                                                                {{ $message }}
+                                                            </div>
+                                                        @enderror
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label fw-semibold small">Jenis
+                                                            Kelamin</label>
+                                                        <select name="jenis_kelamin" class="form-select rounded-3"
+                                                            required>
+                                                            <option value="Laki-laki"
+                                                                {{ $siswa->jenis_kelamin == 'Laki-laki' ? 'selected' : '' }}>
+                                                                Laki-laki</option>
+                                                            <option value="Perempuan"
+                                                                {{ $siswa->jenis_kelamin == 'Perempuan' ? 'selected' : '' }}>
+                                                                Perempuan</option>
+                                                        </select>
+                                                    </div>
+                                                    <div class="col-12 mt-4">
+                                                        <button type="submit"
+                                                            class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm"
+                                                            style="background-color: #0F8B44;">Simpan
+                                                            Perubahan</button>
+                                                    </div>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        @empty
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-secondary">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bi bi-people display-4 opacity-50 mb-2"></i>
+                                        <h6 class="fw-bold text-body">Belum ada data siswa.</h6>
+                                        <p class="small mb-0">Silakan tambahkan data siswa baru melalui tombol di atas.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
         </div>
-      </div>
     </div>
 
-    <!-- MODAL TAMBAH SISWA -->
-    @auth
-      <div class="modal fade" id="modalTambahSiswa" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
-          <div class="modal-content rounded-4 border-0 shadow">
-            <div class="modal-header border-bottom-0 pt-4 px-4">
-              <h5 class="modal-title fw-bold">Tambah Data Siswa Baru</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- TAMBAH SISWA -->
+    <div class="modal fade" id="modalTambahSiswa" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow bg-body">
+                <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                    <h5 class="modal-title fw-bold">Tambah Siswa Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button> 
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <form action="{{ route('siswa.store') }}" method="POST">
+                        @csrf
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">Nama Lengkap Siswa</label>
+                                <input type="text" name="nama_siswa" class="form-control rounded-3"
+                                    placeholder="Contoh: Siti Aminah" required>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold small">NISN</label>
+                                <input type="text" name="nisn" class="form-control rounded-3"
+                                    placeholder="Nomor Induk Siswa Nasional" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Tahun Masuk</label>
+                                
+                                @php
+                                    $profilSekolah = \App\Models\ProfilSekolah::first();
+                                    $minTahun = $profilSekolah && $profilSekolah->tahun_berdiri ? (int)$profilSekolah->tahun_berdiri : 2000;
+                                @endphp
+
+                                <input type="number" name="tahun_masuk" 
+                                    class="form-control rounded-3 @error('tahun_masuk') is-invalid @enderror"
+                                    value="{{ old('tahun_masuk') }}"
+                                    min="{{ $minTahun }}" 
+                                    max="{{ date('Y') }}" 
+                                    placeholder="Contoh: {{ date('Y') }}" 
+                                    required>
+                                
+                                <div class="form-text" style="font-size: 0.75rem;">Minimal tahun {{ $minTahun }} (Tahun berdiri sekolah).</div>
+
+                                @error('tahun_masuk')
+                                    <div class="invalid-feedback">
+                                        {{ $message }}
+                                    </div>
+                                @enderror
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small">Jenis Kelamin</label>
+                                <select name="jenis_kelamin" class="form-select rounded-3" required>
+                                    <option value="">Pilih</option>
+                                    <option value="Laki-laki">Laki-laki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
+                            </div>
+                            <div class="col-12 mt-4">
+                                <button type="submit"
+                                    class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm"
+                                    style="background-color: #0F8B44;">Simpan Data
+                                    Siswa</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="modal-body px-4 pb-4">
-              <form action="{{ route('siswa.store') }}" method="POST">
-                @csrf
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">NISN</label>
-                  <input type="text" name="nisn" class="form-control rounded-3" maxlength="10" placeholder="Maksimal 10 digit" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Nama Lengkap Siswa</label>
-                  <input type="text" name="nama_siswa" class="form-control rounded-3" maxlength="40" placeholder="Nama lengkap siswa..." required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Jenis Kelamin</label>
-                  <select name="jenis_kelamin" class="form-select rounded-3" required>
-                    <option value="Laki-Laki">Laki-Laki</option>
-                    <option value="Perempuan">Perempuan</option>
-                  </select>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Tahun Masuk</label>
-                  <input type="number" name="tahun_masuk" class="form-control rounded-3" value="{{ date('Y') }}" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Simpan Data Siswa</button>
-              </form>
-            </div>
-          </div>
         </div>
-      </div>
-    @endauth
+    </div>
 @endsection

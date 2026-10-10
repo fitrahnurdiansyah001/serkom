@@ -13,6 +13,8 @@ return new class extends Migration
     {
         Schema::create('profil_sekolahs', function (Blueprint $table) {
             $table->id();
+            $table->string('logo')->nullable();
+            $table->string('foto')->nullable();
             $table->string('nama_sekolah');
             $table->string('kepala_sekolah');
             $table->string('npsn');

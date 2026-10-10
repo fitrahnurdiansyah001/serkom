@@ -1,207 +1,304 @@
 @extends('layouts.app')
 
-@section('title', 'Profil Sekolah - Web Schools')
+@section('title', 'Profil Sekolah - SDIT Al-Hikmah')
 
 @section('content')
-    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="page-title fw-bold">Profil Sekolah</h1>
-        <p class="page-subtitle text-muted">Informasi lengkap, visi misi, dan fasilitas sekolah.</p>
-      </div>
-      
-      @auth
-        @if(Auth::user()->role === 'admin')
-          <div>
-            <button type="button" id="btnToggleEdit" class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="toggleEditMode()">
-              <i class="bi bi-pencil-square me-2" id="iconEdit"></i> <span id="textBtn">Edit Profil</span>
-            </button>
-          </div>
-        @endif
-      @endauth
+    <style>
+        .card-modern {
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+    </style>
+
+    <!-- BANNER UTAMA -->
+    <div class="card border-0 text-white mb-4 shadow-sm"
+        style="background: linear-gradient(135deg, #0F8B44 0%, #0c7338 100%); border-radius: 1rem;">
+        <div class="card-body p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <h3 class="fw-bold mb-1 text-white">Profil Sekolah</h3>
+                <p class="mb-0 text-white-50 fs-6">Informasi lengkap, aset visual, visi misi, dan fasilitas sekolah.</p>
+            </div>
+            <div class="mt-3 mt-md-0">
+                <button type="button" class="btn btn-light px-4 py-2 fw-semibold shadow-sm rounded-pill" style="color: #0F8B44;"
+                    data-bs-toggle="modal" data-bs-target="#modalEditProfil">
+                    <i class="bi bi-pencil-square me-2"></i> Edit Profil & Aset
+                </button>
+            </div>
+        </div>
     </div>
 
-    @if(session('success'))
-      <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
-        <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
-    <form action="{{ route('profil.update') }}" method="POST" id="formProfil">
-      @csrf
+    <div class="row g-4">
 
-      <div class="row g-4 mb-5">
-        
-        <!-- KIRI: Visi, Misi, Sejarah -->
-        <div class="col-xl-8 col-lg-7">
-          <div class="card mb-4 border shadow-sm rounded-4">
-            <div class="card-header bg-white pb-0 border-0 pt-4 rounded-top-4">
-              <h5 class="fw-bold"><i class="bi bi-bullseye text-primary me-2"></i> Visi & Misi</h5>
-            </div>
-            <div class="card-body">
-              <div class="view-mode">
-                <h6 class="fw-bold text-primary">Visi</h6>
-                <p class="text-muted">"{!! nl2br(e($profil->visi ?? 'Belum diisi')) !!}"</p>
-                
-                <h6 class="fw-bold text-primary mt-4">Misi</h6>
-                <div class="text-muted mb-0" style="white-space: pre-line;">
-                  {!! $profil->misi ?? 'Belum diisi' !!}
-                </div>
-              </div>
+        <!-- KOLOM KIRI (Konten Utama: Aset Visual, Visi Misi, Sejarah) -->
+        <div class="col-lg-8 d-flex flex-column gap-4">
 
-              <div class="edit-mode d-none">
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Visi Sekolah</label>
-                  <textarea name="visi" class="form-control rounded-3" rows="2" required>{{ $profil->visi ?? '' }}</textarea>
+            <!-- Aset Visual Sekolah -->
+            <div class="card-modern">
+                <div class="p-4 text-white d-flex align-items-center" style="background-color: #0F8B44;">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-images me-2"></i> Aset Visual Sekolah</h6>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label fw-semibold">Misi Sekolah</label>
-                  <textarea name="misi" class="form-control rounded-3" rows="4" required>{{ $profil->misi ?? '' }}</textarea>
+                <div class="p-4">
+                    <div class="row g-4 align-items-center">
+                        <div class="col-md-4 text-center border-end">
+                            <span class="text-secondary small d-block mb-2 fw-semibold">Logo Sekolah</span>
+                            @php $logo = optional($profil)->logo; @endphp
+                            @if ($logo && file_exists(public_path('uploads/profil/' . $logo)))
+                                <img src="{{ asset('uploads/profil/' . $logo) }}"
+                                    class="img-fluid rounded-3 object-fit-contain shadow-sm border p-1"
+                                    style="max-height: 100px;" alt="Logo">
+                            @else
+                                <div
+                                    class="bg-body-tertiary rounded-4 d-flex flex-column align-items-center justify-content-center text-secondary py-4 border border-dashed">
+                                    <i class="bi bi-shield-shaded fs-2 opacity-50 mb-1"></i>
+                                    <small class="small">Belum ada logo</small>
+                                </div>
+                            @endif
+                        </div>
+                        <div class="col-md-8 text-center">
+                            <span class="text-secondary small d-block mb-2 fw-semibold">Foto Utama / Gedung</span>
+                            @php $foto = optional($profil)->foto; @endphp
+                            @if ($foto && file_exists(public_path('uploads/profil/' . $foto)))
+                                <img src="{{ asset('uploads/profil/' . $foto) }}"
+                                    class="img-fluid rounded-3 object-fit-cover w-100 shadow-sm border"
+                                    style="height: 110px;" alt="Gedung">
+                            @else
+                                <div class="bg-body-tertiary rounded-4 d-flex flex-column align-items-center justify-content-center text-secondary py-4 border border-dashed"
+                                    style="height: 110px;">
+                                    <i class="bi bi-building fs-2 opacity-50 mb-1"></i>
+                                    <small class="small">Belum ada foto utama</small>
+                                </div>
+                            @endif
+                        </div>
+                    </div>
                 </div>
-              </div>
             </div>
-          </div>
 
-          <div class="card border shadow-sm rounded-4">
-            <div class="card-header bg-white pb-0 border-0 pt-4 rounded-top-4">
-              <h5 class="fw-bold"><i class="bi bi-clock-history text-success me-2"></i> Sejarah Singkat</h5>
+            <!-- Visi & Misi -->
+            <div class="card-modern">
+                <div class="p-4 text-white d-flex align-items-center" style="background-color: #0F8B44;">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-bullseye me-2"></i> Visi & Misi</h6>
+                </div>
+                <div class="p-4">
+                    <h6 class="fw-bold mb-2" style="color: #0F8B44;">Visi</h6>
+                    <p class="text-secondary fst-italic mb-3">"{!! optional($profil)->visi ?? (optional($profil)->visi_misi ?? 'Belum diatur') !!}"</p>
+
+                    <h6 class="fw-bold mb-2" style="color: #0F8B44;">Misi</h6>
+                    <div class="text-secondary small lh-lg">
+                        {!! optional($profil)->misi ?? 'Belum ada misi yang diinput.' !!}
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-              <div class="view-mode">
-                <p class="text-muted mb-0" style="text-align: justify; white-space: pre-line;">
-                  {{ $profil->sejarah ?? 'Belum diisi' }}
-                </p>
-              </div>
-              <div class="edit-mode d-none">
-                <label class="form-label fw-semibold">Sejarah Singkat</label>
-                <textarea name="sejarah" class="form-control rounded-3" rows="5">{{ $profil->sejarah ?? '' }}</textarea>
-              </div>
+
+            <!-- Sejarah Singkat -->
+            <div class="card-modern">
+                <div class="p-4 text-white d-flex align-items-center" style="background-color: #0F8B44;">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i> Sejarah Singkat</h6>
+                </div>
+                <div class="p-4">
+                    <p class="text-secondary small mb-0 lh-lg">
+                        {!! optional($profil)->sejarah ?? 'Belum ada catatan sejarah singkat sekolah yang dimasukkan.' !!}
+                    </p>
+                </div>
             </div>
-          </div>
+
         </div>
 
-        <!-- KANAN: Identitas & Fasilitas -->
-        <div class="col-xl-4 col-lg-5">
-          <div class="card mb-4 border shadow-sm rounded-4">
-            <div class="card-header bg-white pb-0 border-0 pt-4 rounded-top-4">
-              <h5 class="fw-bold"><i class="bi bi-card-checklist text-warning me-2"></i> Identitas Sekolah</h5>
-            </div>
-            <div class="card-body">
-              <ul class="list-group list-group-flush view-mode">
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  <span class="text-muted">Nama Sekolah</span>
-                  <span class="fw-semibold text-end">{{ $profil->nama_sekolah ?? '-' }}</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  <span class="text-muted">NPSN</span>
-                  <span class="fw-semibold text-end">{{ $profil->npsn ?? '-' }}</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  <span class="text-muted">Tahun Berdiri</span>
-                  <span class="fw-semibold text-end">{{ $profil->tahun_berdiri ?? '-' }}</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  <span class="text-muted">Kepala Sekolah</span>
-                  <span class="fw-semibold text-end">{{ $profil->kepala_sekolah ?? '-' }}</span>
-                </li>
-                <li class="list-group-item px-0 d-flex flex-column align-items-start">
-                  <span class="text-muted mb-1">Alamat Lengkap</span>
-                  <span class="fw-semibold small">{{ $profil->alamat ?? '-' }}</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  <span class="text-muted">Email</span>
-                  <span class="fw-semibold text-end">{{ $profil->email ?? '-' }}</span>
-                </li>
-                <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
-                  <span class="text-muted">Telepon</span>
-                  <span class="fw-semibold text-end">{{ $profil->telepon ?? '-' }}</span>
-                </li>
-              </ul>
+        <!-- KOLOM KANAN (Sidebar Informasi: Identitas Detail & Fasilitas) -->
+        <div class="col-lg-4 d-flex flex-column gap-4">
 
-              <div class="edit-mode d-none">
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">Nama Sekolah</label>
-                  <input type="text" name="nama_sekolah" class="form-control form-control-sm rounded-3" value="{{ $profil->nama_sekolah ?? '' }}" required>
+            <!-- Identitas Detail -->
+            <div class="card-modern">
+                <div class="p-4 text-white d-flex align-items-center" style="background-color: #0F8B44;">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-building-check me-2"></i> Identitas Sekolah</h6>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">NPSN</label>
-                  <input type="text" name="npsn" class="form-control form-control-sm rounded-3" value="{{ $profil->npsn ?? '' }}" required>
+                <div class="p-4">
+                    <ul class="list-group list-group-flush bg-transparent">
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <span class="text-secondary small">Nama Sekolah</span>
+                            <span
+                                class="fw-semibold text-end">{{ optional($profil)->nama_sekolah ?? (optional($profil)->nama ?? '-') }}</span>
+                        </li>
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <span class="text-secondary small">NPSN</span>
+                            <span class="fw-semibold text-end">{{ optional($profil)->npsn ?? '-' }}</span>
+                        </li>
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <span class="text-secondary small">Tahun Berdiri</span>
+                            <span class="fw-semibold text-end">{{ optional($profil)->tahun_berdiri ?? '1998' }}</span>
+                        </li>
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <span class="text-secondary small">Kepala Sekolah</span>
+                            <span class="fw-semibold text-end">{{ optional($profil)->kepala_sekolah ?? '-' }}</span>
+                        </li>
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <span class="text-secondary small">Alamat Lengkap</span>
+                            <span class="fw-semibold text-end small">{{ optional($profil)->alamat ?? '-' }}</span>
+                        </li>
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent">
+                            <span class="text-secondary small">Email</span>
+                            <span
+                                class="fw-semibold text-end small">{{ optional($profil)->email ?? (optional($profil)->kontak ?? '-') }}</span>
+                        </li>
+                        <li
+                            class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center bg-transparent border-0">
+                            <span class="text-secondary small">Telepon</span>
+                            <span class="fw-semibold text-end">{{ optional($profil)->telepon ?? '-' }}</span>
+                        </li>
+                    </ul>
                 </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">Tahun Berdiri</label>
-                  <input type="number" name="tahun_berdiri" class="form-control form-control-sm rounded-3" value="{{ $profil->tahun_berdiri ?? '' }}">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">Kepala Sekolah</label>
-                  <input type="text" name="kepala_sekolah" class="form-control form-control-sm rounded-3" value="{{ $profil->kepala_sekolah ?? '' }}" required>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">Alamat</label>
-                  <textarea name="alamat" class="form-control form-control-sm rounded-3" rows="2" required>{{ $profil->alamat ?? '' }}</textarea>
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">Email</label>
-                  <input type="email" name="email" class="form-control form-control-sm rounded-3" value="{{ $profil->email ?? '' }}">
-                </div>
-                <div class="mb-3">
-                  <label class="form-label small fw-semibold">Telepon</label>
-                  <input type="text" name="telepon" class="form-control form-control-sm rounded-3" value="{{ $profil->telepon ?? '' }}">
-                </div>
-              </div>
             </div>
-          </div>
 
-          <div class="card border shadow-sm rounded-4">
-            <div class="card-header bg-white pb-0 border-0 pt-4 rounded-top-4">
-              <h5 class="fw-bold"><i class="bi bi-building-check text-info me-2"></i> Fasilitas Utama</h5>
+            <!-- Fasilitas Utama -->
+            <div class="card-modern">
+                <div class="p-4 text-white d-flex align-items-center" style="background-color: #0F8B44;">
+                    <h6 class="fw-bold mb-0"><i class="bi bi-tools me-2"></i> Fasilitas Utama</h6>
+                </div>
+                <div class="p-4">
+                    <p class="text-secondary small mb-0 lh-lg">
+                        {!! optional($profil)->fasilitas ??
+                            'Laboratorium Komputer, Laboratorium IPA, Lapangan Olahraga Multifungsi, Perpustakaan Digital, Masjid, Ruang Musik.' !!}
+                    </p>
+                </div>
             </div>
-            <div class="card-body">
-              <div class="view-mode">
-                <p class="text-muted small mb-0">{{ $profil->fasilitas ?? 'Belum diisi' }}</p>
-              </div>
-              <div class="edit-mode d-none">
-                <textarea name="fasilitas" class="form-control rounded-3" rows="3">{{ $profil->fasilitas ?? '' }}</textarea>
-              </div>
-            </div>
-          </div>
+
         </div>
 
-      </div>
+    </div>
 
-      <div id="saveContainer" class="text-center mb-5 d-none">
-        <button type="submit" class="btn btn-success btn-lg rounded-pill px-5 shadow">
-          <i class="bi bi-check-circle me-2"></i> Simpan Perubahan Profil
-        </button>
-      </div>
+    <!-- MODAL EDIT LENGKAP -->
+    <div class="modal fade" id="modalEditProfil" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content rounded-4 border-0 shadow bg-body">
+                <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                    <h5 class="modal-title fw-bold"><i class="bi bi-pencil-square me-2"></i> Edit Profil & Aset Sekolah
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form action="{{ route('profil.update') }}" method="POST" enctype="multipart/form-data">
+                        @csrf
 
-    </form>
+                        <div class="row g-3">
+                            <!-- Nama Sekolah -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Nama Sekolah</label>
+                                <input type="text" name="nama_sekolah" class="form-control rounded-3"
+                                    value="{{ old('nama_sekolah', $profil->nama_sekolah ?? '') }}" required>
+                            </div>
 
-    <script>
-      function toggleEditMode() {
-        const viewElements = document.querySelectorAll('.view-mode');
-        const editElements = document.querySelectorAll('.edit-mode');
-        const saveContainer = document.getElementById('saveContainer');
-        const textBtn = document.getElementById('textBtn');
-        const iconEdit = document.getElementById('iconEdit');
-        const btnToggle = document.getElementById('btnToggleEdit');
+                            <!-- NPSN -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">NPSN</label>
+                                <input type="text" name="npsn" class="form-control rounded-3"
+                                    value="{{ old('npsn', $profil->npsn ?? '') }}" required>
+                            </div>
 
-        let isEditing = textBtn.innerText === 'Batal';
+                            <!-- Kepala Sekolah -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Kepala Sekolah</label>
+                                <input type="text" name="kepala_sekolah" class="form-control rounded-3"
+                                    value="{{ old('kepala_sekolah', $profil->kepala_sekolah ?? '') }}" required>
+                            </div>
 
-        if (isEditing) {
-          viewElements.forEach(el => el.classList.remove('d-none'));
-          editElements.forEach(el => el.classList.add('d-none'));
-          saveContainer.classList.add('d-none');
-          textBtn.innerText = 'Edit Profil';
-          iconEdit.className = 'bi bi-pencil-square me-2';
-          btnToggle.className = 'btn btn-primary rounded-pill px-4 shadow-sm';
-        } else {
-          viewElements.forEach(el => el.classList.add('d-none'));
-          editElements.forEach(el => el.classList.remove('d-none'));
-          saveContainer.classList.remove('d-none');
-          textBtn.innerText = 'Batal';
-          iconEdit.className = 'bi bi-x-circle me-2';
-          btnToggle.className = 'btn btn-outline-danger rounded-pill px-4 shadow-sm';
-        }
-      }
-    </script>
+                            <!-- Tahun Berdiri -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Tahun Berdiri</label>
+                                <input type="number" name="tahun_berdiri" class="form-control rounded-3"
+                                    value="{{ old('tahun_berdiri', $profil->tahun_berdiri ?? '') }}">
+                            </div>
+
+                            <!-- Email Sekolah -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Email Sekolah</label>
+                                <input type="email" name="email" class="form-control rounded-3"
+                                    value="{{ old('email', $profil->email ?? '') }}">
+                            </div>
+
+                            <!-- Nomor Telepon -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Nomor Telepon</label>
+                                <input type="text" name="telepon" class="form-control rounded-3"
+                                    value="{{ old('telepon', $profil->telepon ?? '') }}">
+                            </div>
+
+                            <!-- Alamat Lengkap -->
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Alamat Lengkap</label>
+                                <textarea name="alamat" class="form-control rounded-3" rows="2" required>{{ old('alamat', $profil->alamat ?? '') }}</textarea>
+                            </div>
+
+                            <!-- Ganti Logo Sekolah -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Ganti Logo Sekolah</label>
+                                <input type="file" name="logo" class="form-control rounded-3" accept="image/*">
+                                <small class="text-secondary">Format: PNG, JPG (Opsional)</small>
+                            </div>
+
+                            <!-- Ganti Foto Utama / Gedung -->
+                            <div class="col-md-6">
+                                <label class="form-label small fw-semibold">Ganti Foto Utama / Gedung</label>
+                                <input type="file" name="foto" class="form-control rounded-3" accept="image/*">
+                                <small class="text-secondary">Format: PNG, JPG (Opsional)</small>
+                            </div>
+
+                            <!-- Visi -->
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Visi</label>
+                                <textarea name="visi" class="form-control rounded-3" rows="2" required>{{ old('visi', $profil->visi ?? '') }}</textarea>
+                            </div>
+
+                            <!-- Misi -->
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Misi</label>
+                                <textarea name="misi" class="form-control rounded-3" rows="3" required>{{ old('misi', $profil->misi ?? '') }}</textarea>
+                            </div>
+
+                            <!-- Sejarah Singkat -->
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Sejarah Singkat</label>
+                                <textarea name="sejarah" class="form-control rounded-3" rows="3">{{ old('sejarah', $profil->sejarah ?? '') }}</textarea>
+                            </div>
+
+                            <!-- Fasilitas Utama -->
+                            <div class="col-12">
+                                <label class="form-label small fw-semibold">Fasilitas Utama</label>
+                                <textarea name="fasilitas" class="form-control rounded-3" rows="2">{{ old('fasilitas', $profil->fasilitas ?? '') }}</textarea>
+                            </div>
+
+                            <!-- Tombol Submit -->
+                            <div class="col-12 mt-4">
+                                <button type="submit"
+                                    class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm" style="background-color: #0F8B44;">Simpan
+                                    Perubahan</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 @endsection

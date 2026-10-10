@@ -1,149 +1,270 @@
 @extends('layouts.app')
 
-@section('title', 'Data Users - Web Schools')
+@section('title', 'Data Pengguna - SDIT Al-Hikmah')
 
 @section('content')
-    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="page-title fw-bold">Manajemen Data Users</h1>
-        <p class="page-subtitle text-muted">Daftar akun administrator dan operator yang memiliki akses ke sistem.</p>
-      </div>
+    <style>
+        .card-modern {
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+
+        html[data-bs-theme="dark"] .modal-content {
+            background-color: #1e293b !important;
+            color: #f8f9fa !important;
+            border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        }
+
+        html[data-bs-theme="dark"] .form-control,
+        html[data-bs-theme="dark"] .form-select {
+            background-color: #0f172a !important;
+            border-color: #334155 !important;
+            color: #f8f9fa !important;
+        }
+    </style>
+
+    <!-- BANNER UTAMA -->
+    <div class="card border-0 text-white mb-4 shadow-sm"
+        style="background: linear-gradient(135deg, #0F8B44 0%, #0c7338 100%); border-radius: 1rem;">
+        <div class="card-body p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <h3 class="fw-bold mb-1 text-white">Manajemen Data Pengguna</h3>
+                <p class="mb-0 text-white-50 fs-6">Kelola akun administrator, staf, hak akses (role), serta status akun
+                    portal.</p>
+            </div>
+
+            <div class="mt-3 mt-md-0">
+                <button type="button"
+                    class="btn btn-light px-4 py-2 fw-semibold shadow-sm rounded-pill d-flex align-items-center"
+                    style="color: #0F8B44;" data-bs-toggle="modal" data-bs-target="#modalTambahUser">
+                    <i class="bi bi-person-plus-fill me-2"></i> Tambah Pengguna Baru
+                </button>
+            </div>
+        </div>
     </div>
 
-    @if(session('success'))
-      <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
-        <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    @endif
-
-    @if(session('error'))
-      <div class="alert alert-danger alert-dismissible fade show rounded-4" role="alert">
-        <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
-    @endif
-
-    <!-- Tabel Data Users -->
-    <div class="card border shadow-sm rounded-4 overflow-hidden mb-5">
-      <div class="card-body p-0">
-        <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-              <tr>
-                <th class="py-3 px-4">No</th>
-                <th class="py-3">Avatar</th>
-                <th class="py-3">Nama Pengguna</th>
-                <th class="py-3">Email</th>
-                <th class="py-3">Hak Akses (Role)</th>
-                <th class="py-3">Status</th>
-                @auth
-                  @if(Auth::user()->role === 'admin')
-                    <th class="py-3 text-center" style="width: 150px;">Aksi</th>
-                  @endif
-                @endauth
-              </tr>
-            </thead>
-            <tbody>
-              @forelse($users as $index => $usr)
-                <tr>
-                  <td class="px-4 text-muted">{{ $index + 1 }}</td>
-                  <td>
-                    @if($usr->photo && file_exists(public_path('uploads/profiles/' . $usr->photo)))
-                      <img src="{{ asset('uploads/profiles/' . $usr->photo) }}" class="rounded-circle border object-fit-cover" width="40" height="40" alt="Avatar">
-                    @else
-                      <img src="{{ asset('assets/images/avatar.jpg') }}" class="rounded-circle border object-fit-cover" width="40" height="40" alt="Default Avatar">
-                    @endif
-                  </td>
-                  <td><span class="fw-bold text-dark">{{ $usr->name }}</span></td>
-                  <td><span class="text-muted">{{ $usr->email }}</span></td>
-                  <td>
-                    <span class="badge {{ strtolower($usr->role) == 'admin' ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-dark' }} px-3 py-1 rounded-pill text-capitalize">
-                      {{ $usr->role }}
-                    </span>
-                  </td>
-                  <td>
-                    <span class="badge {{ strtolower($usr->status) == 'active' ? 'bg-primary bg-opacity-10 text-primary' : 'bg-warning bg-opacity-10 text-dark' }} px-3 py-1 rounded-pill text-capitalize">
-                      {{ $usr->status }}
-                    </span>
-                  </td>
-                  
-                  @auth
-                    @if(Auth::user()->role === 'admin')
-                      <td class="text-center">
-                        <div class="d-flex justify-content-center gap-2">
-                          <!-- Tombol Edit -->
-                          <button type="button" class="btn btn-sm btn-outline-warning rounded-circle" data-bs-toggle="modal" data-bs-target="#modalEditUser{{ $usr->id }}" title="Edit">
-                            <i class="bi bi-pencil"></i>
-                          </button>
-                          <!-- Tombol Hapus -->
-                          <form action="{{ route('users.destroy', $usr->id) }}" method="POST" onsubmit="return confirm('Yakin ingin menghapus akun pengguna ini?')">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle" title="Hapus">
-                              <i class="bi bi-trash"></i>
-                            </button>
-                          </form>
-                        </div>
-                      </td>
-                    @endif
-                  @endauth
-                </tr>
-
-                <!-- MODAL EDIT USER -->
-                @auth
-                  @if(Auth::user()->role === 'admin')
-                    <div class="modal fade" id="modalEditUser{{ $usr->id }}" tabindex="-1" aria-hidden="true">
-                      <div class="modal-dialog">
-                        <div class="modal-content rounded-4 border-0 shadow">
-                          <div class="modal-header border-bottom-0 pt-4 px-4">
-                            <h5 class="modal-title fw-bold">Edit Akun Pengguna</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                          </div>
-                          <div class="modal-body px-4 pb-4">
-                            <form action="{{ route('users.update', $usr->id) }}" method="POST">
-                              @csrf
-                              <div class="mb-3">
-                                <label class="form-label fw-semibold">Nama Lengkap</label>
-                                <input type="text" name="name" class="form-control rounded-3" value="{{ $usr->name }}" required>
-                              </div>
-                              <div class="mb-3">
-                                <label class="form-label fw-semibold">Alamat Email</label>
-                                <input type="email" name="email" class="form-control rounded-3" value="{{ $usr->email }}" required>
-                              </div>
-                              <div class="mb-3">
-                                <label class="form-label fw-semibold">Hak Akses (Role)</label>
-                                <select name="role" class="form-select rounded-3 text-capitalize" required>
-                                  <option value="Admin" {{ strtolower($usr->role) == 'admin' ? 'selected' : '' }}>Admin</option>
-                                  <option value="Operator" {{ strtolower($usr->role) == 'operator' ? 'selected' : '' }}>Operator</option>
-                                </select>
-                              </div>
-                              <div class="mb-3">
-                                <label class="form-label fw-semibold">Status</label>
-                                <select name="status" class="form-select rounded-3 text-capitalize" required>
-                                  <option value="active" {{ strtolower($usr->status) == 'active' ? 'selected' : '' }}>active</option>
-                                  <option value="non active" {{ strtolower($usr->status) == 'non active' ? 'selected' : '' }}>non active</option>
-                                </select>
-                              </div>
-                              <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Simpan Perubahan</button>
-                            </form>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  @endif
-                @endauth
-
-              @empty
-                <tr>
-                  <td colspan="6" class="text-center py-5 text-muted">
-                    <i class="bi bi-person-slash display-4 opacity-50 d-block mb-2"></i> Belum ada data pengguna terdaftar.
-                  </td>
-                </tr>
-              @endforelse
-            </tbody>
-          </table>
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
-      </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- TABEL DATA USERS DALAM KARTU MODERN -->
+    <div class="card-modern mb-5">
+        <div class="p-4 text-white d-flex justify-content-between align-items-center" style="background-color: #0F8B44;">
+            <h6 class="fw-bold mb-0"><i class="bi bi-shield-lock-fill me-2"></i> Tabel Akun Pengguna</h6>
+            <span class="badge bg-white fw-bold px-3 py-1 rounded-pill" style="color: #0F8B44;">Total:
+                {{ count($users ?? []) }} Akun</span>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-body-tertiary">
+                        <tr>
+                            <th class="py-3 px-4 text-body-secondary fw-semibold" style="width: 70px;">No</th>
+                            <th class="py-3 text-body-secondary fw-semibold" style="width: 80px;">Avatar</th>
+                            <th class="py-3 text-body-secondary fw-semibold">Nama Pengguna</th>
+                            <th class="py-3 text-body-secondary fw-semibold">Email</th>
+                            <th class="py-3 text-body-secondary fw-semibold">Hak Akses (Role)</th>
+                            <th class="py-3 text-body-secondary fw-semibold">Status</th>
+                            <th class="py-3 text-center text-body-secondary fw-semibold" style="width: 150px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        @forelse($users ?? [] as $index => $usr)
+                            <tr>
+                                <td class="px-4 text-body-secondary">{{ $index + 1 }}</td>
+                                <td>
+                                    @if (Auth::user()->photo && file_exists(public_path('uploads/profiles/' . Auth::user()->photo)))
+                                        <img id="previewImage" src="{{ asset('uploads/profiles/' . Auth::user()->photo) }}"
+                                            alt="Foto Profil" class="rounded-circle border object-fit-cover shadow-sm" width="40"
+                                            height="40" alt="Avatar">
+                                    @else
+                                        <img id="previewImage"
+                                            src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0F8B44&color=fff&size=256"
+                                            alt="Default Avatar" class="rounded-circle border object-fit-cover shadow-sm bg-light" width="40"
+                                            height="40" alt="Default Avatar">
+                                    @endif
+                                </td>
+                                <td><span class="fw-bold text-body">{{ $usr->name }}</span></td>
+                                <td><span class="text-secondary">{{ $usr->email }}</span></td>
+                                <td>
+                                    <span
+                                        class="badge {{ strtolower($usr->role) == 'admin' ? 'bg-success bg-opacity-10 text-success' : 'bg-secondary bg-opacity-10 text-secondary' }} px-3 py-1 rounded-pill text-capitalize"
+                                        style="{{ strtolower($usr->role) == 'admin' ? 'background-color: rgba(15, 139, 68, 0.1) !important; color: #0F8B44 !important;' : '' }}">
+                                        {{ $usr->role }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span
+                                        class="badge {{ strtolower($usr->status ?? 'active') == 'active' ? 'bg-success bg-opacity-10 text-success' : 'bg-warning bg-opacity-10 text-warning' }} px-3 py-1 rounded-pill text-capitalize">
+                                        {{ $usr->status ?? 'Active' }}
+                                    </span>
+                                </td>
+
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <!-- Tombol Edit Modal -->
+                                        <button type="button" class="btn btn-sm rounded-pill px-3 fw-medium"
+                                            style="border: 1px solid #0F8B44; color: #0F8B44;" data-bs-toggle="modal"
+                                            data-bs-target="#modalEditUser{{ $usr->id }}" title="Edit">
+                                            <i class="bi bi-pencil me-1"></i> Edit
+                                        </button>
+                                        <!-- Tombol Hapus -->
+                                        <form action="{{ route('users.destroy', $usr->id) }}" method="POST"
+                                            onsubmit="return confirm('Yakin ingin menghapus akun pengguna ini?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit"
+                                                class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium"
+                                                title="Hapus">
+                                                <i class="bi bi-trash me-1"></i> Hapus
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+
+                            </tr>
+
+                            <!-- EDIT USER -->
+                            <div class="modal fade" id="modalEditUser{{ $usr->id }}" tabindex="-1"
+                                aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content rounded-4 border-0 shadow bg-body">
+                                        <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                                            <h5 class="modal-title fw-bold">Edit Akun Pengguna</h5>
+                                            <button type="button" class="btn-close btn-close-white"
+                                                data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body p-4 text-start">
+                                            <form action="{{ route('users.update', $usr->id) }}" method="POST">
+                                                @csrf
+                                                @method('PUT')
+
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold small">Nama Lengkap</label>
+                                                    <input type="text" name="name" class="form-control rounded-3"
+                                                        value="{{ $usr->name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold small">Email</label>
+                                                    <input type="email" name="email" class="form-control rounded-3"
+                                                        value="{{ $usr->email }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold small">Hak Akses (Role)</label>
+                                                    <select name="role" class="form-select rounded-3" required>
+                                                        <option value="admin"
+                                                            {{ strtolower($usr->role) == 'admin' ? 'selected' : '' }}>Admin
+                                                        </option>
+                                                        <option value="operator"
+                                                            {{ strtolower($usr->role) == 'operator' ? 'selected' : '' }}>
+                                                            Operator</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold small">Status Akun</label>
+                                                    <select name="status" class="form-select rounded-3" required>
+                                                        <option value="active"
+                                                            {{ strtolower($usr->status ?? '') == 'active' ? 'selected' : '' }}>
+                                                            Active</option>
+                                                        <option value="non active"
+                                                            {{ strtolower($usr->status ?? '') == 'non active' ? 'selected' : '' }}>
+                                                            Non Active</option>
+                                                    </select>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold small">Password Baru
+                                                        (Opsional)</label>
+                                                    <input type="password" name="password" class="form-control rounded-3"
+                                                        placeholder="Kosongkan jika tidak diubah">
+                                                </div>
+                                                <button type="submit"
+                                                    class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm"
+                                                    style="background-color: #0F8B44;">Simpan
+                                                    Perubahan</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        @empty
+                            <tr>
+                                <td colspan="7" class="text-center py-5 text-secondary">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bi bi-shield-lock display-4 opacity-50 mb-2"></i>
+                                        <h6 class="fw-bold text-body">Belum ada data pengguna.</h6>
+                                        <p class="small mb-0">Silakan tambahkan akun pengguna melalui tombol di atas.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL TAMBAH PENGGUNA BARU -->
+    <div class="modal fade" id="modalTambahUser" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow bg-body">
+                <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                    <h5 class="modal-title fw-bold">Buat Akun Pengguna Baru</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4 text-start">
+                    <form action="{{ route('users.store') }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Nama Lengkap</label>
+                            <input type="text" name="name" class="form-control rounded-3"
+                                placeholder="Nama lengkap..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Alamat Email</label>
+                            <input type="email" name="email" class="form-control rounded-3"
+                                placeholder="email@sekolah.sch.id" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Hak Akses (Role)</label>
+                            <select name="role" class="form-select rounded-3" required>
+                                <option value="admin">Admin</option>
+                                <option value="operator">Operator</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Password Akun</label>
+                            <input type="password" name="password" class="form-control rounded-3"
+                                placeholder="Minimal 6 karakter..." required>
+                        </div>
+                        <button type="submit" class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm"
+                            style="background-color: #0F8B44;">Buat
+                            Akun Baru</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection

@@ -1,169 +1,230 @@
 @extends('layouts.app')
 
-@section('title', 'Ekstrakurikuler - Web Schools')
+@section('title', 'Ekstrakurikuler - SDIT Al-Hikmah')
 
 @section('content')
-    <div class="page-header mb-4 d-flex justify-content-between align-items-center">
-      <div>
-        <h1 class="page-title fw-bold">Kegiatan Ekstrakurikuler</h1>
-        <p class="page-subtitle text-muted">Daftar klub dan kegiatan pengembangan bakat minat siswa.</p>
-      </div>
-      
-      <!-- Tombol Tambah Khusus Admin -->
-      @auth
-        @if(Auth::user()->role === 'admin')
-          <div>
-            <button type="button" class="btn btn-primary rounded-pill px-4 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahEkskul">
-              <i class="bi bi-plus-circle me-2"></i> Tambah Ekstrakurikuler
-            </button>
-          </div>
-        @endif
-      @endauth
+    <style>
+        .card-modern {
+            background-color: var(--bs-body-bg);
+            border: 1px solid var(--bs-border-color, rgba(0, 0, 0, 0.08));
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            overflow: hidden;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: var(--bs-body-bg);
+            color: var(--bs-body-color);
+        }
+    </style>
+
+    <!-- BANNER UTAMA -->
+    <div class="card border-0 text-white mb-4 shadow-sm"
+        style="background: linear-gradient(135deg, #0F8B44 0%, #0c7338 100%); border-radius: 1rem;">
+        <div class="card-body p-4 p-md-5 d-flex flex-column flex-md-row justify-content-between align-items-md-center">
+            <div>
+                <h3 class="fw-bold mb-1 text-white">Kegiatan Ekstrakurikuler</h3>
+                <p class="mb-0 text-white-50 fs-6">Daftar wadah pengembangan bakat, minat, dan potensi siswa.</p>
+            </div>
+            @auth
+                <div class="mt-3 mt-md-0">
+                    <button type="button" class="btn btn-light px-4 py-2 fw-semibold shadow-sm rounded-pill d-flex align-items-center" style="color: #0F8B44;"
+                        data-bs-toggle="modal" data-bs-target="#modalTambahEkskul">
+                        <i class="bi bi-dribbble me-2"></i> Tambah Ekstrakurikuler
+                    </button>
+                </div>
+            @endauth
+        </div>
     </div>
 
-    @if(session('success'))
-      <div class="alert alert-success alert-dismissible fade show rounded-4" role="alert">
-        <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-      </div>
+    @if (session('success'))
+        <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+            <i class="bi bi-check-circle me-2"></i> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
 
-    <!-- Daftar Ekstrakurikuler -->
-    <div class="row g-4 mb-5">
-      @forelse($eskuls as $eskul)
-        <div class="col-md-4">
-          <div class="card border shadow-sm rounded-4 h-100 overflow-hidden">
-            @if($eskul->foto && file_exists(public_path('uploads/eskul/' . $eskul->foto)))
-              <img src="{{ asset('uploads/eskul/' . $eskul->foto) }}" class="card-img-top object-fit-cover" style="height: 180px;" alt="{{ $eskul->nama_ekskul }}">
-            @else
-              <div class="bg-light text-center py-5 text-muted border-bottom">
-                <i class="bi bi-image display-4 opacity-50"></i>
-              </div>
-            @endif
-
-            <div class="card-body d-flex flex-column justify-content-between">
-              <div>
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-1 rounded-pill small">
-                    <i class="bi bi-calendar-event me-1"></i> {{ $eskul->jadwal }}
-                  </span>
-                </div>
-                <h5 class="fw-bold text-dark mb-1">{{ $eskul->nama_ekskul }}</h5>
-                <p class="text-muted small mb-2"><i class="bi bi-person-badge text-success me-1"></i> Pembina: <strong>{{ $eskul->pembina }}</strong></p>
-                <p class="text-muted small mb-3">{{ $eskul->deskripsi ?? 'Tidak ada deskripsi tambahan.' }}</p>
-              </div>
-
-              <!-- Tombol Aksi Admin -->
-              @auth
-                @if(Auth::user()->role === 'admin')
-                  <div class="d-flex gap-2 pt-3 border-top">
-                    <button type="button" class="btn btn-sm btn-outline-warning w-50 rounded-pill" data-bs-toggle="modal" data-bs-target="#modalEditEkskul{{ $eskul->id }}">
-                      <i class="bi bi-pencil me-1"></i> Edit
-                    </button>
-                    <form action="{{ route('ekskul.destroy', $eskul->id) }}" method="POST" class="w-50" onsubmit="return confirm('Yakin ingin menghapus ekstrakurikuler ini?')">
-                      @csrf
-                      @method('DELETE')
-                      <button type="submit" class="btn btn-sm btn-outline-danger w-50 w-100 rounded-pill">
-                        <i class="bi bi-trash me-1"></i> Hapus
-                      </button>
-                    </form>
-                  </div>
-                @endif
-              @endauth
-            </div>
-          </div>
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle me-2"></i> Terdapat kesalahan input. Periksa kembali form Anda.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
+    @endif
 
-        <!-- MODAL EDIT EKSKUL -->
-        @auth
-          @if(Auth::user()->role === 'admin')
-            <div class="modal fade" id="modalEditEkskul{{ $eskul->id }}" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog">
-                <div class="modal-content rounded-4 border-0 shadow">
-                  <div class="modal-header border-bottom-0 pt-4 px-4">
-                    <h5 class="modal-title fw-bold">Edit Ekstrakurikuler</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <div class="modal-content border-0 p-4 pt-0">
-                    <form action="{{ route('ekskul.update', $eskul->id) }}" method="POST" enctype="multipart/form-data">
-                      @csrf
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Ekstrakurikuler</label>
-                        <input type="text" name="nama_ekskul" class="form-control rounded-3" value="{{ $eskul->nama_ekskul }}" required>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Nama Pembina</label>
-                        <input type="text" name="pembina" class="form-control rounded-3" value="{{ $eskul->pembina }}" required>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Jadwal Kegiatan</label>
-                        <input type="text" name="jadwal" class="form-control rounded-3" value="{{ $eskul->jadwal }}" placeholder="Contoh: Jumat, 15:00 WIB" required>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Deskripsi</label>
-                        <textarea name="deskripsi" class="form-control rounded-3" rows="3">{{ $eskul->deskripsi }}</textarea>
-                      </div>
-                      <div class="mb-3">
-                        <label class="form-label fw-semibold">Ganti Foto (Opsional)</label>
-                        <input type="file" name="foto" class="form-control rounded-3" accept="image/*">
-                      </div>
-                      <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Simpan Perubahan</button>
-                    </form>
-                  </div>
-                </div>
-              </div>
+    <!-- TABEL EKSTRAKURIKULER -->
+    <div class="card card-modern mb-5 overflow-hidden">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-body-tertiary">
+                        <tr>
+                            <th class="py-3 px-4 text-body-secondary fw-semibold" width="5%">NO</th>
+                            <th class="py-3 text-body-secondary fw-semibold" width="25%">NAMA EKSTRAKURIKULER</th>
+                            <th class="py-3 text-body-secondary fw-semibold" width="20%">PEMBINA</th>
+                            <th class="py-3 text-body-secondary fw-semibold" width="20%">JADWAL</th>
+                            <th class="text-center py-3 text-body-secondary fw-semibold" width="30%">AKSI</th>
+                        </tr>
+                    </thead>
+                    <tbody class="border-top-0">
+                        @forelse($ekstrakurikulers ?? [] as $key => $item)
+                            @php
+                                $idItem = $item->getKey();
+                            @endphp
+                            <tr>
+                                <td class="px-4 text-body-secondary">{{ $key + 1 }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center gap-3">
+                                        @if ($item->foto && file_exists(public_path('uploads/ekstrakurikuler/' . $item->foto)))
+                                            <img src="{{ asset('uploads/ekstrakurikuler/' . $item->foto) }}" class="rounded-3 object-fit-cover shadow-sm border flex-shrink-0" width="45" height="45" alt="Foto">
+                                        @else
+                                            <div class="rounded-3 bg-body-tertiary d-flex align-items-center justify-content-center text-secondary border flex-shrink-0" style="width: 45px; height: 45px;">
+                                                <i class="bi bi-joystick"></i>
+                                            </div>
+                                        @endif
+                                        <div class="overflow-hidden">
+                                            <span class="fw-bold text-body d-block text-truncate">{{ $item->nama_ekskul }}</span>
+                                            @if($item->deskripsi)
+                                                <small class="text-secondary d-block text-truncate">{{ Str::limit($item->deskripsi, 50) }}</small>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="text-body fw-medium">
+                                        <i class="bi bi-person-badge me-1 text-secondary"></i> {{ $item->pembina ?? 'Belum diatur' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-body-tertiary text-body border px-2 py-1 rounded-pill fw-normal">
+                                        <i class="bi bi-calendar-event me-1 text-secondary"></i> {{ $item->jadwal ?? 'Fleksibel' }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ route('ekskul.show', $item->slug) }}" class="btn btn-sm rounded-pill px-3 fw-medium" style="border: 1px solid #0F8B44; color: #0F8B44;">
+                                            <i class="bi bi-eye me-1"></i> Detail
+                                        </a>
+
+                                        @auth
+                                            <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 fw-medium" data-bs-toggle="modal" data-bs-target="#modalEditEkskul{{ $idItem }}">
+                                                <i class="bi bi-pencil me-1"></i> Edit
+                                            </button>
+                                            <form action="{{ route('ekskul.destroy', $idItem) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus ekstrakurikuler ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-outline-danger rounded-pill px-3 fw-medium">
+                                                    <i class="bi bi-trash me-1"></i> Hapus
+                                                </button>
+                                            </form>
+                                        @endauth
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <!-- MODAL EDIT EKSTRAKURIKULER -->
+                            @auth
+                                <div class="modal fade" id="modalEditEkskul{{ $idItem }}" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                                        <div class="modal-content rounded-4 border-0 shadow bg-body">
+                                            <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                                                <h5 class="modal-title fw-bold">Edit Data Ekstrakurikuler</h5>
+                                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body p-4 text-start">
+                                                <form action="{{ route('ekskul.update', $idItem) }}" method="POST" enctype="multipart/form-data">
+                                                    @csrf
+                                                    <div class="row g-3">
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold small">Nama Ekstrakurikuler</label>
+                                                            <input type="text" name="nama_ekskul" class="form-control rounded-3" value="{{ $item->nama_ekskul }}" required>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-semibold small">Pembina</label>
+                                                            <input type="text" name="pembina" class="form-control rounded-3" value="{{ $item->pembina }}">
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label class="form-label fw-semibold small">Jadwal Kegiatan</label>
+                                                            <input type="text" name="jadwal" class="form-control rounded-3" value="{{ $item->jadwal }}" placeholder="Contoh: Setiap Jumat, 15:00 WIB">
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold small">Deskripsi / Keterangan</label>
+                                                            <textarea name="deskripsi" class="form-control rounded-3" rows="3">{{ $item->deskripsi }}</textarea>
+                                                        </div>
+                                                        <div class="col-12">
+                                                            <label class="form-label fw-semibold small">Ganti Foto / Dokumentasi (Opsional)</label>
+                                                            <input type="file" name="foto" class="form-control rounded-3" accept="image/*">
+                                                        </div>
+                                                        <div class="col-12 mt-4">
+                                                            <button type="submit" class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm" style="background-color: #0F8B44;">Simpan Perubahan</button>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endauth
+
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-5">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <i class="bi bi-dribbble display-4 text-secondary opacity-50 mb-3"></i>
+                                        <h5 class="fw-bold text-body">Belum Ada Data Ekstrakurikuler</h5>
+                                        <p class="text-secondary small mb-0">Silakan tambahkan data ekstrakurikuler baru melalui tombol di atas.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-          @endif
-        @endauth
-
-      @empty
-        <div class="col-12">
-          <div class="alert alert-info text-center rounded-4 py-4">
-            <i class="bi bi-info-circle fs-3 d-block mb-2"></i> Belum ada data ekstrakurikuler yang ditambahkan.
-          </div>
         </div>
-      @endforelse
     </div>
 
-    <!-- MODAL TAMBAH EKSKUL -->
+    <!-- MODAL TAMBAH EKSTRAKURIKULER -->
     @auth
-      @if(Auth::user()->role === 'admin')
         <div class="modal fade" id="modalTambahEkskul" tabindex="-1" aria-hidden="true">
-          <div class="modal-dialog">
-            <div class="modal-content rounded-4 border-0 shadow">
-              <div class="modal-header border-bottom-0 pt-4 px-4">
-                <h5 class="modal-title fw-bold">Tambah Ekstrakurikuler Baru</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body px-4 pb-4">
-                <form action="{{ route('ekskul.store') }}" method="POST" enctype="multipart/form-data">
-                  @csrf
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Nama Ekstrakurikuler</label>
-                    <input type="text" name="nama_ekskul" class="form-control rounded-3" placeholder="Contoh: Pramuka" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Nama Pembina</label>
-                    <input type="text" name="pembina" class="form-control rounded-3" placeholder="Contoh: Bpk. Rudi, S.Pd." required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Jadwal Kegiatan</label>
-                    <input type="text" name="jadwal" class="form-control rounded-3" placeholder="Contoh: Jumat, 15:00 WIB" required>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Deskripsi</label>
-                    <textarea name="deskripsi" class="form-control rounded-3" rows="3" placeholder="Deskripsi singkat kegiatan..."></textarea>
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label fw-semibold">Foto Kegiatan</label>
-                    <input type="file" name="foto" class="form-control rounded-3" accept="image/*">
-                  </div>
-                  <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm">Simpan Ekstrakurikuler</button>
-                </form>
-              </div>
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content rounded-4 border-0 shadow bg-body">
+                    <div class="modal-header text-white pt-4 px-4" style="background-color: #0F8B44;">
+                        <h5 class="modal-title fw-bold">Tambah Ekstrakurikuler Baru</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4 text-start">
+                        <form action="{{ route('ekskul.store') }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small">Nama Ekstrakurikuler</label>
+                                    <input type="text" name="nama_ekskul" class="form-control rounded-3" placeholder="Contoh: Pramuka / Paskibra / Futsal" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Pembina</label>
+                                    <input type="text" name="pembina" class="form-control rounded-3" placeholder="Nama Guru Pembina">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold small">Jadwal Kegiatan</label>
+                                    <input type="text" name="jadwal" class="form-control rounded-3" placeholder="Contoh: Rabu, 15:30 WIB">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small">Deskripsi / Keterangan (Opsional)</label>
+                                    <textarea name="deskripsi" class="form-control rounded-3" rows="3" placeholder="Penjelasan kegiatan ekstrakurikuler..."></textarea>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold small">Foto / Dokumentasi (Opsional)</label>
+                                    <input type="file" name="foto" class="form-control rounded-3" accept="image/*">
+                                </div>
+                                <div class="col-12 mt-4">
+                                    <button type="submit" class="btn text-white w-100 py-2 rounded-pill fw-semibold shadow-sm" style="background-color: #0F8B44;">Simpan Ekstrakurikuler</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
-          </div>
         </div>
-      @endif
     @endauth
 @endsection

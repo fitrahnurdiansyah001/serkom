@@ -3,35 +3,51 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
-        // User::factory(10)->create();
+        // 1. User Seeder
+        User::create([
+            'name' => 'Fitrah Nurdiansyah',
+            'username' => 'Fitrah',
+            'email' => 'fitrah@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'photo' => null,
+        ]);
 
-        User::factory()->create([
-            'name' => 'TARANTULA',
-            'email' => 'test1233@example.com',
-        ]);
-        User::factory()->create([
+        User::create([
             'name' => 'BAHLIL',
-            'email' => 'test23@example.com',
+            'username' => 'bahlil',
+            'email' => 'bahlil@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'operator',
+            'photo' => null,
         ]);
-        User::factory()->create([
+
+        User::create([
             'name' => 'GIBRAN',
-            'email' => 'test24@example.com',
+            'username' => 'GIBRAN',
+            'email' => 'gibran@gmail.com',
+            'password' => Hash::make('password'),
+            'role' => 'operator',
+            'photo' => null,
         ]);
-        User::factory()->create([
-            'name' => 'GROUND',
-            'email' => 'test25@example.com',
+
+        $this->call([
+            ProfilSekolahSeeder::class,
+            SiswaSeeder::class,
+            GuruSeeder::class,
+            BeritaSeeder::class,
+            EkstrakurikulerSeeder::class,
+            GaleriSeeder::class,
+            PengumumanSeeder::class,
+            PrestasiSeeder::class,
+            ProgramSeeder::class,
         ]);
     }
 }

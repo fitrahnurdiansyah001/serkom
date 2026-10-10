@@ -4,13 +4,32 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Galeri;
+use Illuminate\Support\Str;
 
 class GaleriController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $galeris = Galeri::latest('tanggal')->get();
-        return view('galeri.index', compact('galeris'));
+        $query = Galeri::query();
+        if ($request->has('kategori') && !empty($request->kategori)) {
+            $query->where('kategori', $request->kategori);
+        }
+
+        $semuaGaleri = $query->latest('id_galeri')->get();
+
+        $totalVideo = $semuaGaleri->filter(fn($galeri) => $galeri->kategori === 'Video')->count();
+
+        return view('galeri.index', [
+            'galeris' => $semuaGaleri,
+            'totalVideo' => $totalVideo
+        ]);
+    }
+
+    public function show(string $slug)
+    {
+        // Mencari galeri berdasarkan slug
+        $galeri = Galeri::where('slug', $slug)->firstOrFail();
+        return view('galeri.show', compact('galeri'));
     }
 
     public function store(Request $request)
@@ -18,79 +37,101 @@ class GaleriController extends Controller
         $request->validate([
             'judul' => 'required|string|max:50',
             'keterangan' => 'nullable|string',
-            'file' => 'required|image|mimes:jpeg,png,jpg,gif|max:6000',
             'kategori' => 'required|in:Foto,Video',
-            'tanggal' => 'required|date'
+            'tanggal' => 'required|date',
+            'file' => 'required|file|mimes:jpeg,png,jpg,gif,mp4,webm|max:10240'
         ]);
 
         $fileName = null;
         if ($request->hasFile('file')) {
-            $file = $request->file('file');
-            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/galeri'), $fileName);
+            $uploadedFile = $request->file('file');
+            $destinationPath = public_path('uploads/galeri');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $fileName = 'galeri_' . time() . '_' . uniqid() . '.' . $uploadedFile->getClientOriginalExtension();
+            $uploadedFile->move($destinationPath, $fileName);
+        }
+
+        $slugBaru = Str::slug($request->judul);
+
+        if(Galeri::where('slug', $slugBaru)->exists()) {
+             $slugBaru = $slugBaru . '-' . time();
         }
 
         Galeri::create([
-            'judul' => $request->judul,
+            'judul'      => $request->judul,
+            'slug'       => $slugBaru, // Menyimpan slug ke database
             'keterangan' => $request->keterangan,
-            'file' => $fileName,
-            'kategori' => $request->kategori,
-            'tanggal' => $request->tanggal
+            'kategori'   => $request->kategori,
+            'tanggal'    => $request->tanggal,
+            'file'       => $fileName
         ]);
 
-        return redirect()->route('galeri.index')->with('success', 'Dokumentasi galeri berhasil ditambahkan!');
+        return redirect()->route('galeri.index')->with('success', 'Data galeri berhasil ditambahkan!');
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $galeri = Galeri::findOrFail($id);
 
         $request->validate([
             'judul' => 'required|string|max:50',
             'keterangan' => 'nullable|string',
-            'file' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:6000', // Diubah ke nullable
             'kategori' => 'required|in:Foto,Video',
-            'tanggal' => 'nullable|date'
+            'tanggal' => 'required|date',
+            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,webm|max:10240'
         ]);
 
-        // Cek jika ada file baru yang diunggah
         if ($request->hasFile('file')) {
-            // Hapus file lama jika ada
+            // Hapus file lama
             if ($galeri->file && file_exists(public_path('uploads/galeri/' . $galeri->file))) {
-                unlink(public_path('uploads/galeri/' . $galeri->file));
+                @unlink(public_path('uploads/galeri/' . $galeri->file));
             }
 
-            // Simpan file baru
-            $file = $request->file('file');
-            $fileName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/galeri'), $fileName);
-            
+            $uploadedFile = $request->file('file');
+            $destinationPath = public_path('uploads/galeri');
+
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
+            $fileName = 'galeri_' . time() . '_' . uniqid() . '.' . $uploadedFile->getClientOriginalExtension();
+            $uploadedFile->move($destinationPath, $fileName);
+
             $galeri->file = $fileName;
+        }
+
+        if ($galeri->judul != $request->judul) {
+            $slugBaru = Str::slug($request->judul);
+            if(Galeri::where('slug', $slugBaru)->where('id_galeri', '!=', $galeri->id_galeri)->exists()){
+                 $slugBaru = $slugBaru . '-' . time();
+            }
+            $galeri->slug = $slugBaru;
         }
 
         $galeri->judul = $request->judul;
         $galeri->keterangan = $request->keterangan;
         $galeri->kategori = $request->kategori;
-        
-        if ($request->has('tanggal')) {
-            $galeri->tanggal = $request->tanggal;
-        }
-
+        $galeri->tanggal = $request->tanggal;
         $galeri->save();
 
-        return redirect()->route('galeri.index')->with('success', 'Dokumentasi galeri berhasil diperbarui!');
+        return redirect()->route('galeri.index')->with('success', 'Data galeri berhasil diperbarui!');
     }
 
-    public function destroy($id)
+    public function destroy(string $id)
     {
         $galeri = Galeri::findOrFail($id);
-        
+
+        // Hapus file fisik
         if ($galeri->file && file_exists(public_path('uploads/galeri/' . $galeri->file))) {
-            unlink(public_path('uploads/galeri/' . $galeri->file));
+            @unlink(public_path('uploads/galeri/' . $galeri->file));
         }
-        
+
         $galeri->delete();
 
-        return redirect()->route('galeri.index')->with('success', 'Dokumentasi galeri berhasil dihapus!');
+        return redirect()->route('galeri.index')->with('success', 'Data galeri berhasil dihapus!');
     }
 }

@@ -4,87 +4,126 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Berita;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class BeritaController extends Controller
 {
-    // Menampilkan daftar berita
-    public function index()
+    public function index(Request $request)
     {
-        $beritas = Berita::latest('tanggal')->get();
-        return view('berita.index', compact('beritas'));
+        $query = Berita::query();
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+
+        $beritas = $query->latest()->get();
+        $totalPublish = $beritas->filter(fn($berita) => $berita->status === 'Publish')->count();
+
+        return view('berita.index', compact('beritas', 'totalPublish'));
     }
 
-    // Menyimpan berita baru (Admin/Operator)
+    public function show(string $slug)
+    {
+        $berita = Berita::where('slug', $slug)->firstOrFail();
+        return view('berita.show', compact('berita'));
+    }
+
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required|string|max:50',
-            'isi' => 'required',
+            'judul'   => 'required|string|max:255',
             'tanggal' => 'required|date',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:Publish,Draft'
+            'status'  => 'required|string',
+            'penulis' => 'nullable|string|max:255',
+            'isi'     => 'required|string',
+            'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        $gambarName = null;
+        $berita = new Berita();
+        $berita->judul = $request->judul;
+        
+        $slugBaru = Str::slug($request->judul);
+        if(Berita::where('slug', $slugBaru)->exists()) {
+             $slugBaru = $slugBaru . '-' . time();
+        }
+        $berita->slug = $slugBaru;
+
+        $berita->tanggal = $request->tanggal;
+        $berita->status = $request->status;
+        $berita->penulis = $request->penulis ?? (Auth::user()->name ?? 'Admin Sekolah');
+        
+        $berita->id_user = Auth::id() ?? 1; 
+
+        $berita->isi = $request->isi;
+
         if ($request->hasFile('gambar')) {
             $file = $request->file('gambar');
-            $gambarName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $gambarName);
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/berita'), $filename);
+            $berita->gambar = $filename;
         }
 
-        Berita::create([
-            'judul' => $request->judul,
-            'isi' => $request->isi,
-            'tanggal' => $request->tanggal,
-            'gambar' => $gambarName,
-            'status' => $request->status,
-            'id_user' => Auth::id() // Menyimpan ID user yang sedang login
-        ]);
+        $berita->save();
 
-        return redirect()->route('berita.index')->with('success', 'Berita berhasil diterbitkan!');
+        return redirect()->route('berita.index')->with('success', 'Berita berhasil ditambahkan!');
     }
 
-    // Memperbarui berita
-    public function update(Request $request, $id)
+    public function update(Request $request, string $id)
     {
         $berita = Berita::findOrFail($id);
 
         $request->validate([
-            'judul' => 'required|string|max:50',
-            'isi' => 'required',
+            'judul'   => 'required|string|max:255',
             'tanggal' => 'required|date',
-            'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:Publish,Draft'
+            'status'  => 'required|string',
+            'penulis' => 'nullable|string|max:255',
+            'isi'     => 'required|string',
+            'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
-        if ($request->hasFile('gambar')) {
-            if ($berita->gambar && file_exists(public_path('uploads/berita/' . $berita->gambar))) {
-                unlink(public_path('uploads/berita/' . $berita->gambar));                   
+        if ($berita->judul != $request->judul) {
+            $slugBaru = Str::slug($request->judul);
+            
+            if(Berita::where('slug', $slugBaru)->where($berita->getKeyName(), '!=', $id)->exists()){
+                 $slugBaru = $slugBaru . '-' . time();
             }
-
-            $file = $request->file('gambar');
-            $gambarName = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $gambarName);
-            $berita->gambar = $gambarName;
+            $berita->slug = $slugBaru;
         }
 
         $berita->judul = $request->judul;
-        $berita->isi = $request->isi;
         $berita->tanggal = $request->tanggal;
         $berita->status = $request->status;
+        $berita->penulis = $request->penulis ?? $berita->penulis; 
+
+        $berita->id_user = Auth::id() ?? $berita->id_user ?? 1;
+
+        $berita->isi = $request->isi;
+
+        if ($request->hasFile('gambar')) {
+            if ($berita->gambar && File::exists(public_path('uploads/berita/' . $berita->gambar))) {
+                File::delete(public_path('uploads/berita/' . $berita->gambar));
+            }
+
+            $file = $request->file('gambar');
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $file->move(public_path('uploads/berita'), $filename);
+            $berita->gambar = $filename;
+        }
+
         $berita->save();
 
         return redirect()->route('berita.index')->with('success', 'Berita berhasil diperbarui!');
     }
 
-    // Menghapus berita
-    public function destroy($id)
+    public function destroy(string $id)
     {
         $berita = Berita::findOrFail($id);
-        if ($berita->gambar && file_exists(public_path('uploads/berita/' . $berita->gambar))) {
-            unlink(public_path('uploads/berita/' . $berita->gambar));
+
+        if ($berita->gambar && File::exists(public_path('uploads/berita/' . $berita->gambar))) {
+            File::delete(public_path('uploads/berita/' . $berita->gambar));
         }
+
         $berita->delete();
 
         return redirect()->route('berita.index')->with('success', 'Berita berhasil dihapus!');

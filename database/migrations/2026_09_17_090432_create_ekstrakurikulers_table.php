@@ -12,12 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('ekstrakurikulers', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id_ekskul')->primary();
             $table->string('nama_ekskul');
+            $table->string('slug')->unique()->nullable();
             $table->string('pembina');
-            $table->string('jadwal'); // Contoh: Jumat, 15:00 WIB
+            $table->string('jadwal');
             $table->text('deskripsi')->nullable();
-            $table->string('foto')->nullable(); // Foto kegiatan/logo ekskul
+            $table->string('foto')->nullable();
             $table->timestamps();
         });
     }

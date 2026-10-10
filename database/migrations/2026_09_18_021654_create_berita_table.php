@@ -6,18 +6,19 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('berita', function (Blueprint $table) {
-            $table->id('id_berita');
-            $table->string('judul', 50);
+            $table->engine='InnoDB';
+            $table->uuid('id_berita')->primary();
+            $table->string('judul', 255);
+            $table->string('slug')->unique()->nullable();
+            $table->string('kategori', 30)->default('Berita');
             $table->text('isi');
             $table->date('tanggal');
             $table->string('gambar', 100)->nullable();
             $table->enum('status', ['Publish', 'Draft']);
+            $table->string('penulis')->nullable();
             $table->unsignedBigInteger('id_user')->nullable();
             $table->timestamps();
         });

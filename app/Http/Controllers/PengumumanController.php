@@ -7,27 +7,26 @@ use App\Models\Pengumuman;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class PengumumanController extends Controller
 {
     public function index(Request $request)
-{
-    $query = Pengumuman::query();
+    {
+        $query = Pengumuman::query();
 
-    if ($request->has('status') && !empty($request->status)) {
-        $query->where('status', $request->status);
+        if ($request->has('status') && !empty($request->status)) {
+            $query->where('status', $request->status);
+        }
+        
+        $pengumumans = $query->latest()->get();
+        $totalPublish = $pengumumans->filter(fn($pengumuman) => $pengumuman->status === 'Publish')->count();
+
+        return view('pengumuman.index', compact('pengumumans', 'totalPublish'));
     }
-    
-    $pengumumans = $query->latest()->get();
-
-    $totalPublish = $pengumumans->filter(fn($pengumuman) => $pengumuman->status === 'Publish')->count();
-
-    return view('pengumuman.index', compact('pengumumans', 'totalPublish'));
-}
 
     public function show(string $slug)
     {
-        // Mencari pengumuman berdasarkan slug
         $pengumuman = Pengumuman::where('slug', $slug)->firstOrFail();
         return view('pengumuman.show', compact('pengumuman'));
     }
@@ -35,11 +34,13 @@ class PengumumanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'judul'   => 'required|string|max:255',
+            'judul'   => 'required|string|max:255|unique:pengumuman,judul',
             'tanggal' => 'required|date',
             'status'  => 'required|in:Publish,Draft',
             'isi'     => 'required|string',
             'foto'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'judul.unique' => 'Judul pengumuman ini sudah ada, silakan gunakan judul yang lain.'
         ]);
 
         $pengumuman = new Pengumuman();
@@ -60,7 +61,14 @@ class PengumumanController extends Controller
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/pengumuman'), $filename);
+            
+            // Pastikan folder tersedia
+            $destinationPath = public_path('uploads/pengumuman');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            
+            $file->move($destinationPath, $filename);
             $pengumuman->foto = $filename;
         }
 
@@ -72,19 +80,28 @@ class PengumumanController extends Controller
     public function update(Request $request, string $id)
     {
         $pengumuman = Pengumuman::findOrFail($id);
+        $primaryKeyName = $pengumuman->getKeyName();
 
+        // Validasi unique dengan ignore data yang sedang diedit
         $request->validate([
-            'judul'   => 'required|string|max:255',
+            'judul'   => [
+                'required', 
+                'string', 
+                'max:255', 
+                Rule::unique('pengumuman', 'judul')->ignore($id, $primaryKeyName)
+            ],
             'tanggal' => 'required|date',
             'status'  => 'required|in:Publish,Draft',
             'isi'     => 'required|string',
             'foto'    => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'judul.unique' => 'Judul pengumuman ini sudah digunakan oleh pengumuman lain.'
         ]);
 
         if ($pengumuman->judul != $request->judul) {
             $slugBaru = Str::slug($request->judul);
-            // Cek agar slug tidak kembar dengan pengumuman lain (kecuali pengumuman ini sendiri)
-            if(Pengumuman::where('slug', $slugBaru)->where('id', '!=', $id)->exists()){
+            // Cek agar slug tidak kembar (menggunakan nama primary key yang dinamis)
+            if(Pengumuman::where('slug', $slugBaru)->where($primaryKeyName, '!=', $id)->exists()){
                  $slugBaru = $slugBaru . '-' . time();
             }
             $pengumuman->slug = $slugBaru;
@@ -102,7 +119,13 @@ class PengumumanController extends Controller
 
             $file = $request->file('foto');
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/pengumuman'), $filename);
+            
+            $destinationPath = public_path('uploads/pengumuman');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+            
+            $file->move($destinationPath, $filename);
             $pengumuman->foto = $filename;
         }
 

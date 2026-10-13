@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', 'Pengumuman - Web Schools')
 @section('content')
@@ -13,10 +13,8 @@
 
                 <div class="mb-4 text-center">
                     @if (!empty($pengumuman->foto) && file_exists(public_path('uploads/pengumuman/' . $pengumuman->foto)))
-                        <div class="mb-4 text-center">
-                            <img src="{{ asset('uploads/pengumuman/' . $pengumuman->foto) }}" alt="{{ $pengumuman->judul }}"
-                                class="pengumuman-img-large">
-                        </div>
+                        <img src="{{ asset('uploads/pengumuman/' . $pengumuman->foto) }}" class="card-img-top object-covaer"
+                            style="height: 500px;" alt="Berita">
                     @endif
                 </div>
 

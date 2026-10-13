@@ -1,9 +1,8 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', 'Beranda - ' . ($profil->nama_sekolah ?? 'SDIT Al-Hikmah'))
 
 @section('content')
-    <!-- HERO SECTION -->
     <section class="container py-5 mt-2">
         <div class="row align-items-center g-5">
             <div class="col-lg-6" data-aos="fade-right">
@@ -31,7 +30,7 @@
             <div class="col-lg-6" data-aos="fade-left">
                 <div class="position-relative">
                     <img src="{{ isset($profil->foto) && file_exists(public_path('uploads/profil/' . $profil->foto)) ? asset('uploads/profil/' . $profil->foto) : 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1000' }}"
-                        alt="Gedung Sekolah" class="w-100 rounded-4 shadow-lg object-fit-cover border border-3 border-white"
+                        alt="Gedung Sekolah" class="img-fluid w-100 rounded-4 shadow-lg object-fit-cover border border-3 border-white"
                         style="height: 460px;">
                 </div>
             </div>

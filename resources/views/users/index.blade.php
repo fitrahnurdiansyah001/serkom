@@ -83,6 +83,7 @@
                             <th class="py-3 px-4 text-body-secondary fw-semibold" style="width: 70px;">No</th>
                             <th class="py-3 text-body-secondary fw-semibold" style="width: 80px;">Avatar</th>
                             <th class="py-3 text-body-secondary fw-semibold">Nama Pengguna</th>
+                            <th class="py-3 text-body-secondary fw-semibold">Username</th>
                             <th class="py-3 text-body-secondary fw-semibold">Email</th>
                             <th class="py-3 text-body-secondary fw-semibold">Hak Akses (Role)</th>
                             <th class="py-3 text-body-secondary fw-semibold">Status</th>
@@ -99,13 +100,14 @@
                                             alt="Foto Profil" class="rounded-circle border object-fit-cover shadow-sm" width="40"
                                             height="40" alt="Avatar">
                                     @else
-                                        <img id="previewImage"
-                                            src="https://ui-avatars.com/api/?name={{ urlencode(Auth::user()->name) }}&background=0F8B44&color=fff&size=256"
-                                            alt="Default Avatar" class="rounded-circle border object-fit-cover shadow-sm bg-light" width="40"
-                                            height="40" alt="Default Avatar">
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold me-2"
+                                            style="width: 35px; height: 35px; font-size: 0.85rem; background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
+                                            {{ strtoupper(substr($usr->name, 0, 1)) }}
+                                        </div>
                                     @endif
                                 </td>
                                 <td><span class="fw-bold text-body">{{ $usr->name }}</span></td>
+                                <td><span class="fw-bold text-body">{{ $usr->username }}</span></td>
                                 <td><span class="text-secondary">{{ $usr->email }}</span></td>
                                 <td>
                                     <span
@@ -158,12 +160,15 @@
                                         <div class="modal-body p-4 text-start">
                                             <form action="{{ route('users.update', $usr->id) }}" method="POST">
                                                 @csrf
-                                                @method('PUT')
-
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold small">Nama Lengkap</label>
                                                     <input type="text" name="name" class="form-control rounded-3"
                                                         value="{{ $usr->name }}" required>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label fw-semibold small">Nama Lengkap</label>
+                                                    <input type="text" name="name" class="form-control rounded-3"
+                                                        value="{{ $usr->username }}" required>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label fw-semibold small">Email</label>
@@ -241,6 +246,11 @@
                             <label class="form-label fw-semibold small">Nama Lengkap</label>
                             <input type="text" name="name" class="form-control rounded-3"
                                 placeholder="Nama lengkap..." required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small">Username</label>
+                            <input type="text" name="username" class="form-control rounded-3"
+                                placeholder="Usernamep..." required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold small">Alamat Email</label>

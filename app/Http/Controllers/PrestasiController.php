@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Prestasi;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use App\Models\ProfilSekolah;
 
 class PrestasiController extends Controller
@@ -34,20 +35,23 @@ class PrestasiController extends Controller
 
     public function store(Request $request)
     {
+        // Tambahkan validasi unique:prestasis,nama_prestasi
         $request->validate([
-            'nama_prestasi' => 'required|string|max:100',
+            'nama_prestasi' => 'required|string|max:100|unique:prestasis,nama_prestasi',
             'tingkat' => 'required|in:Sekolah,Kecamatan,Kabupaten/Kota,Provinsi,Nasional,Internasional',
             'juara' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Juara Favorit,Medali Emas,Medali Perak,Medali Perunggu',
             'tahun' => 'required|digits:4|integer|min:1900|max:' . date('Y'),
             'deskripsi' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            // Pesan custom jika nama prestasi sudah ada
+            'nama_prestasi.unique' => 'Judul prestasi ini sudah ada, silakan gunakan judul yang lain.'
         ]);
 
         $fotoName = null;
         if ($request->hasFile('foto')) {
             $file = $request->file('foto');
 
-            // Pastikan folder public/uploads/prestasi ada
             $destinationPath = public_path('uploads/prestasi');
             if (!file_exists($destinationPath)) {
                 mkdir($destinationPath, 0755, true);
@@ -56,12 +60,9 @@ class PrestasiController extends Controller
             $fotoName = 'prestasi_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
             $file->move($destinationPath, $fotoName);
         }
+        
+        // Slug otomatis dari nama prestasi
         $slugBaru = Str::slug($request->nama_prestasi);
-
-        $cekSlug = Prestasi::where('slug', $slugBaru)->count();
-        if($cekSlug > 0) {
-             $slugBaru = $slugBaru . '-' . time();
-        }
 
         Prestasi::create([
             'nama_prestasi' => $request->nama_prestasi,
@@ -79,18 +80,26 @@ class PrestasiController extends Controller
     public function update(Request $request, string $id)
     {
         $prestasi = Prestasi::findOrFail($id);
+        $primaryKeyName = $prestasi->getKeyName(); // Mengambil nama primary key yang benar (misal: id_prestasi)
 
+        // Menggunakan Rule::unique dan mengabaikan ID data yang sedang diedit
         $request->validate([
-            'nama_prestasi' => 'required|string|max:100',
-            'tingkat' => 'required|in:Sekolah,Kecamatan,Kabupaten/Kota,Provinsi,Nasional,Internasional',
+            'nama_prestasi' => [
+                'required', 
+                'string', 
+                'max:100', 
+                Rule::unique('prestasis', 'nama_prestasi')->ignore($id, $primaryKeyName)
+            ],
+            'tingkat' => 'required|in:Sekolah,Kecamatan,Kabupaten,Provinsi,Nasional,Internasional',
             'juara' => 'required|in:Juara 1,Juara 2,Juara 3,Harapan 1,Harapan 2,Juara Favorit,Medali Emas,Medali Perak,Medali Perunggu',
             'tahun' => 'required|digits:4|integer',
             'deskripsi' => 'nullable|string',
             'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'nama_prestasi.unique' => 'Judul prestasi ini sudah digunakan oleh data lain.'
         ]);
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
             if ($prestasi->foto && file_exists(public_path('uploads/prestasi/' . $prestasi->foto))) {
                 @unlink(public_path('uploads/prestasi/' . $prestasi->foto));
             }
@@ -109,8 +118,8 @@ class PrestasiController extends Controller
 
         if($prestasi->nama_prestasi != $request->nama_prestasi) {
             $slugBaru = Str::slug($request->nama_prestasi);
-            // Cek duplikat
-            if(Prestasi::where('slug', $slugBaru)->where('id', '!=', $id)->exists()){
+            // Perbaikan cek slug (menggunakan nama primary key yang dinamis)
+            if(Prestasi::where('slug', $slugBaru)->where($primaryKeyName, '!=', $id)->exists()){
                  $slugBaru = $slugBaru . '-' . time();
             }
             $prestasi->slug = $slugBaru;

@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', ($guru->nama_guru ?? $guru->nama) . ' - SDIT Al-Hikmah')
 
@@ -49,7 +49,7 @@
                                 <small class="text-secondary d-block mb-1 font-monospace" style="font-size: 0.8rem;">
                                     <i class="bi bi-card-text me-1" style="color: #0F8B44;"></i> NOMOR INDUK (NIP / NUPTK)
                                 </small>
-                                <span class="fw-bold text-body fs-6">{{ $guru->nip ?? 'Tidak ada data NIP' }}</span>
+                                <span class="fw-bold text-body fs-6">{{ $guru->nip ? substr($guru->nip, 0, 8) . '**********' : 'Tidak ada data NIP' }}</span>
                             </div>
                         </div>
 

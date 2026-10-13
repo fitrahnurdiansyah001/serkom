@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('status', ['Publish', 'Draft']);
             $table->string('foto')->nullable();
             $table->unsignedBigInteger('id_user')->nullable();
+            $table->foreign('id_user')->references('id')->on('users')->onDelete('set null');
             $table->timestamps();
         });
     }

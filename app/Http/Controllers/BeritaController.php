@@ -7,6 +7,7 @@ use App\Models\Berita;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class BeritaController extends Controller
 {
@@ -32,35 +33,43 @@ class BeritaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'judul'   => 'required|string|max:255',
+            'judul'   => 'required|string|max:255|unique:berita,judul',
             'tanggal' => 'required|date',
             'status'  => 'required|string',
             'penulis' => 'nullable|string|max:255',
             'isi'     => 'required|string',
             'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'judul.unique' => 'Judul berita ini sudah ada, silakan gunakan judul yang lain.'
         ]);
 
         $berita = new Berita();
         $berita->judul = $request->judul;
-        
         $slugBaru = Str::slug($request->judul);
+
         if(Berita::where('slug', $slugBaru)->exists()) {
              $slugBaru = $slugBaru . '-' . time();
         }
-        $berita->slug = $slugBaru;
 
+        $berita->slug = $slugBaru;
         $berita->tanggal = $request->tanggal;
         $berita->status = $request->status;
         $berita->penulis = $request->penulis ?? (Auth::user()->name ?? 'Admin Sekolah');
         
         $berita->id_user = Auth::id() ?? 1; 
-
         $berita->isi = $request->isi;
 
         if ($request->hasFile('gambar')) {
             $file = $request->file('gambar');
+            
+            // Pengecekan folder agar tidak error saat diupload
+            $destinationPath = public_path('uploads/berita');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $filename);
+            $file->move($destinationPath, $filename);
             $berita->gambar = $filename;
         }
 
@@ -72,20 +81,28 @@ class BeritaController extends Controller
     public function update(Request $request, string $id)
     {
         $berita = Berita::findOrFail($id);
+        $primaryKeyName = $berita->getKeyName();
 
         $request->validate([
-            'judul'   => 'required|string|max:255',
+            'judul'   => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('berita', 'judul')->ignore($id, $primaryKeyName)
+            ],
             'tanggal' => 'required|date',
             'status'  => 'required|string',
             'penulis' => 'nullable|string|max:255',
             'isi'     => 'required|string',
             'gambar'  => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ], [
+            'judul.unique' => 'Judul berita ini sudah digunakan oleh berita lain.'
         ]);
 
         if ($berita->judul != $request->judul) {
             $slugBaru = Str::slug($request->judul);
-            
-            if(Berita::where('slug', $slugBaru)->where($berita->getKeyName(), '!=', $id)->exists()){
+
+            if(Berita::where('slug', $slugBaru)->where($primaryKeyName, '!=', $id)->exists()){
                  $slugBaru = $slugBaru . '-' . time();
             }
             $berita->slug = $slugBaru;
@@ -101,13 +118,21 @@ class BeritaController extends Controller
         $berita->isi = $request->isi;
 
         if ($request->hasFile('gambar')) {
+            // Hapus gambar lama
             if ($berita->gambar && File::exists(public_path('uploads/berita/' . $berita->gambar))) {
                 File::delete(public_path('uploads/berita/' . $berita->gambar));
             }
 
             $file = $request->file('gambar');
+            
+            // Pengecekan folder
+            $destinationPath = public_path('uploads/berita');
+            if (!file_exists($destinationPath)) {
+                mkdir($destinationPath, 0755, true);
+            }
+
             $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/berita'), $filename);
+            $file->move($destinationPath, $filename);
             $berita->gambar = $filename;
         }
 

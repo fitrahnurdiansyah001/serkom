@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', ($galeris->judul ?? $galeri->judul) . ' - SDIT Al-Hikmah')
 
@@ -22,16 +22,15 @@
                             
                             {{-- Pengecekan Kategori Video --}}
                             @if ($galeris->kategori == 'Video')
-                                <video controls class="shadow-sm" style="width: 100%; max-width: 500px; border: 5px solid #0F8B44; border-radius: 10px;">
+                                <video controls class="shadow-sm" style="width: 100%; max-width: 650px; border: 5px solid #0F8B44; border-radius: 10px;">
                                     <source src="{{ asset('uploads/galeri/' . $galeris->file) }}" type="video/mp4">
                                     Browser Anda tidak mendukung pemutar video.
                                 </video>
                             
-                            {{-- Pengecekan Kategori Foto --}}
                             @else
                                 <img src="{{ asset('uploads/galeri/' . $galeris->file) }}" alt="{{ $galeris->judul }}"
                                     class="profile-img-large"
-                                    style="width: 170px; height: 170px; object-fit: cover; aspect-ratio: 1 / 1; border: 5px solid #0F8B44; box-shadow: 0 10px 25px rgba(15, 139, 68, 0.25);">
+                                    style="width: 650px; height: 300px; object-fit: cover; aspect-ratio: 1 / 1; border: 5px solid #0F8B44; box-shadow: 0 10px 25px rgba(15, 139, 68, 0.25); border-radius: 15px;">
                             @endif
 
                         @else

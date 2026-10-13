@@ -1,9 +1,8 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', 'Prestasi Sekolah - ' . ($profil->nama_sekolah ?? 'SDIT Al-Hikmah'))
 
 @section('content')
-    <!-- HEADER HALAMAN -->
     <section class="container py-5 mt-2 text-center" data-aos="fade-down">
         <span class="badge rounded-pill px-3 py-2 mb-3 fw-semibold shadow-sm text-white" style="background-color: #0F8B44;">
             <i class="bi bi-trophy-fill me-1"></i> Jejak Kebanggaan

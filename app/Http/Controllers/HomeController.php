@@ -27,10 +27,8 @@ class HomeController extends Controller
         $totalPengumuman = Pengumuman::count();
         $totalUser = User::count();
         $totalProgram = Program::count();
-        
         $profil = ProfilSekolah::first();
         $programs = Program::latest()->get();
-        
         $prestasis = Prestasi::latest()->take(5)->get();
         $ekskuls = Ekstrakurikuler::all();
         $galeris = Galeri::latest()->take(6)->get(); 

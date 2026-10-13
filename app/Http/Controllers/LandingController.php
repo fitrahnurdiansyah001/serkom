@@ -26,12 +26,12 @@ class LandingController extends Controller
         $programs = Program::latest()->take(3)->get();
 
         return view('landing.index', compact(
-            'profil', 
-            'prestasis', 
-            'ekskuls', 
-            'galeris', 
-            'beritas', 
-            'pengumumans', 
+            'profil',
+            'prestasis',
+            'ekskuls',
+            'galeris',
+            'beritas',
+            'pengumumans',
             'gurus',
             'programs'
         ));
@@ -46,10 +46,10 @@ class LandingController extends Controller
         $totalPrestasi = Prestasi::count();
 
         return view('landing.tentang', compact(
-            'profil', 
-            'totalSiswa', 
-            'totalGuru', 
-            'totalEkskul', 
+            'profil',
+            'totalSiswa',
+            'totalGuru',
+            'totalEkskul',
             'totalPrestasi'
         ));
     }
@@ -65,9 +65,9 @@ class LandingController extends Controller
     public function detailPrestasi(string $slug)
     {
         $profil = ProfilSekolah::first();
-        $prestasi = Prestasi::where('slug', $slug)->firstOrFail(); 
+        $prestasi = Prestasi::where('slug', $slug)->firstOrFail();
 
-        return view('landing.detail_prestasi', compact('profil', 'prestasi'));
+        return view('landing.detail.detail_prestasi', compact('profil', 'prestasi'));
     }
 
     public function ekskul()
@@ -83,7 +83,7 @@ class LandingController extends Controller
         $profil = ProfilSekolah::first();
         $ekskul = Ekstrakurikuler::where('slug', $slug)->firstOrFail();
 
-        return view('landing.detail_eskul', compact('profil', 'ekskul'));
+        return view('landing.detail.detail_eskul', compact('profil', 'ekskul'));
     }
 
     public function guru()
@@ -99,7 +99,7 @@ class LandingController extends Controller
         $profil = ProfilSekolah::first();
         $guru = Guru::where('slug', $slug)->firstOrFail();
 
-        return view('landing.detail_guru', compact('profil', 'guru'));
+        return view('landing.detail.detail_guru', compact('profil', 'guru'));
     }
 
     public function berita()
@@ -117,7 +117,7 @@ class LandingController extends Controller
         $profil = ProfilSekolah::first();
         $berita = Berita::where('slug', $slug)->firstOrFail();
 
-        return view('landing.detail_berita', compact('profil', 'berita'));
+        return view('landing.detail.detail_berita', compact('profil', 'berita'));
     }
 
     public function pengumuman()
@@ -133,13 +133,13 @@ class LandingController extends Controller
         $profil = ProfilSekolah::first();
         $pengumuman = Pengumuman::where('slug', $slug)->firstOrFail();
 
-        return view('landing.detail_pengumuman', compact('profil', 'pengumuman'));
+        return view('landing.detail.detail_pengumuman', compact('profil', 'pengumuman'));
     }
 
     public function galeri()
     {
         $profil = ProfilSekolah::first();
-        $galeris = Galeri::all(); 
+        $galeris = Galeri::all();
 
         return view('landing.galeri', compact('profil', 'galeris'));
     }
@@ -149,14 +149,29 @@ class LandingController extends Controller
         $profil = ProfilSekolah::first();
         $galeris = Galeri::where('slug', $slug)->firstOrFail();
 
-        return view('landing.detail_galeri', compact('profil', 'galeris'));
+        return view('landing.detail.detail_galeri', compact('profil', 'galeris'));
     }
 
     public function program()
     {
         $profil = ProfilSekolah::first();
-        $programs = Program::latest()->get(); 
+        $programs = Program::latest()->get();
 
         return view('landing.program', compact('profil', 'programs'));
+    }
+
+
+    public function siswa()
+    {
+        $profil = ProfilSekolah::first();
+        $siswas = Siswa::with('kelas')->get();
+
+        return view('landing.siswa', compact('siswas','profil'));
+    }
+
+    public function profil()
+    {
+        $profil = ProfilSekolah::first();
+        return view('landing.profil', compact('profil'));
     }
 }

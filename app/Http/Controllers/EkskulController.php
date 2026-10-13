@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Ekstrakurikuler;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class EkskulController extends Controller
 {
@@ -24,13 +25,15 @@ class EkskulController extends Controller
     }
 
     public function store(Request $request)
-    {
+    {     
         $request->validate([
-            'nama_ekskul' => 'required|string|max:255',
-            'pembina' => 'required|string|max:255',
-            'jadwal' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'nama_ekskul' => 'required|string|max:255|unique:ekstrakurikulers,nama_ekskul',
+            'pembina'     => 'required|string|max:255',
+            'jadwal'      => 'required|string|max:255',
+            'deskripsi'   => 'nullable|string',
+            'foto'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'nama_ekskul.unique' => 'Nama ekstrakurikuler ini sudah ada, silakan gunakan nama yang lain.'
         ]);
 
         $fotoName = null;
@@ -54,7 +57,7 @@ class EkskulController extends Controller
 
         Ekstrakurikuler::create([
             'nama_ekskul' => $request->nama_ekskul,
-            'slug'        => $slugBaru, // Menyimpan slug
+            'slug'        => $slugBaru,
             'pembina'     => $request->pembina,
             'jadwal'      => $request->jadwal,
             'deskripsi'   => $request->deskripsi,
@@ -67,17 +70,24 @@ class EkskulController extends Controller
     public function update(Request $request, string $id)
     {
         $ekskul = Ekstrakurikuler::findOrFail($id);
+        $primaryKeyName = $ekskul->getKeyName();
 
         $request->validate([
-            'nama_ekskul' => 'required|string|max:255',
-            'pembina' => 'required|string|max:255',
-            'jadwal' => 'required|string|max:255',
-            'deskripsi' => 'nullable|string',
-            'foto' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'nama_ekskul' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('ekstrakurikulers', 'nama_ekskul')->ignore($id, $primaryKeyName)
+            ],
+            'pembina'     => 'required|string|max:255',
+            'jadwal'      => 'required|string|max:255',
+            'deskripsi'   => 'nullable|string',
+            'foto'        => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ], [
+            'nama_ekskul.unique' => 'Nama ekstrakurikuler ini sudah digunakan oleh data lain.'
         ]);
 
         if ($request->hasFile('foto')) {
-            // Hapus foto lama jika ada
             if ($ekskul->foto && file_exists(public_path('uploads/ekstrakurikuler/' . $ekskul->foto))) {
                 @unlink(public_path('uploads/ekstrakurikuler/' . $ekskul->foto));
             }
@@ -97,9 +107,8 @@ class EkskulController extends Controller
 
         if ($ekskul->nama_ekskul != $request->nama_ekskul) {
             $slugBaru = Str::slug($request->nama_ekskul);
-            
-            // PERBAIKAN: Menggunakan getKeyName() agar mendeteksi nama primary key secara otomatis
-            if(Ekstrakurikuler::where('slug', $slugBaru)->where($ekskul->getKeyName(), '!=', $id)->exists()){
+     
+            if(Ekstrakurikuler::where('slug', $slugBaru)->where($primaryKeyName, '!=', $id)->exists()){
                  $slugBaru = $slugBaru . '-' . time();
             }
             $ekskul->slug = $slugBaru;

@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', 'Profil Sekolah - ' . ($profil->nama_sekolah ?? 'SDIT Al-Hikmah'))
 

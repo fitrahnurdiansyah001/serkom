@@ -17,6 +17,16 @@ class Siswa extends Model
     protected $keyType = 'string';
 
     protected $fillable = [
-        'nisn', 'nama_siswa','slug', 'jenis_kelamin', 'tahun_masuk'
+        'nisn',
+        'nama_siswa',
+        'kelas_id',
+        'slug',
+        'jenis_kelamin',
+        'tahun_masuk'
     ];
+
+    public function kelas()
+    {
+        return $this->belongsTo(Kelas::class);
+    }
 }

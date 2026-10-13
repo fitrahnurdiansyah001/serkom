@@ -44,12 +44,22 @@
         </div>
     @endif
 
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Terjadi Kesalahan!</strong> Silakan periksa kembali isian Anda:
+            <ul class="mb-0 mt-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row g-4">
 
         <!-- KOLOM KIRI (Konten Utama: Aset Visual, Visi Misi, Sejarah) -->
         <div class="col-lg-8 d-flex flex-column gap-4">
-
-            <!-- Aset Visual Sekolah -->
             <div class="card-modern">
                 <div class="p-4 text-white d-flex align-items-center" style="background-color: #0F8B44;">
                     <h6 class="fw-bold mb-0"><i class="bi bi-images me-2"></i> Aset Visual Sekolah</h6>

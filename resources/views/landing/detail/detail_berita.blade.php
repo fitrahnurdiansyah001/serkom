@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', ($berita->nama_berita ?? $berita->nama) . ' - Web Schools')
 
@@ -13,9 +13,9 @@
             <div class="card-modern p-4 p-md-5">
 
                 <div class="mb-4 text-center">
-                    @if (!empty($berita->foto) && file_exists(public_path('uploads/berita/' . $berita->foto)))
-                        <img src="{{ $berita->gambar ? asset('uploads/berita/' . $berita->gambar) : 'https://via.placeholder.com/400x200' }}"
-                            class="card-img-top object-fit-cover" style="height: 220px;" alt="Berita">
+                    @if (!empty($berita->gambar) && file_exists(public_path('uploads/berita/' . $berita->gambar)))
+                        <img src="{{ asset('uploads/berita/' . $berita->gambar) }}" class="card-img-top object-covaer"
+                            style="height: 500px;" alt="Berita">
                     @endif
                 </div>
 

@@ -72,6 +72,18 @@
         <p class="text-muted text-muted-custom">Menampilkan hasil pencarian dari seluruh modul sekolah.</p>
     </div>
 
+    @if ($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Terjadi Kesalahan!</strong> Silakan periksa kembali isian Anda:
+            <ul class="mb-0 mt-1">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     @php
         $totalHasil = $hasilSiswa->count() + $hasilGuru->count() + $hasilBerita->count() + $hasilEkskul->count() + $hasilGaleri->count() + $hasilPengumuman->count() + $hasilPrestasi->count();
     @endphp

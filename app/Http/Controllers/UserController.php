@@ -24,6 +24,7 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'role' => 'required|in:admin,operator',
             'password' => 'required|string|min:6'
@@ -31,9 +32,10 @@ class UserController extends Controller
 
         User::create([
             'name' => $request->name,
+            'username' => $request->username,
             'email' => $request->email,
             'role' => $request->role,
-            'status' => 'active', // Default status aktif
+            'status' => 'active',
             'password' => Hash::make($request->password)
         ]);
 
@@ -50,6 +52,7 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
+            'username' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $id, 
             'role' => 'required|in:admin,operator',
             'status' => 'required|in:active,non active',
@@ -57,6 +60,7 @@ class UserController extends Controller
         ]);
 
         $user->name = $request->name;
+        $user->username = $request->username;
         $user->email = $request->email;
         $user->role = $request->role;
         $user->status = $request->status;

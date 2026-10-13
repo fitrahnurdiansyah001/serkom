@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', 'Berita - ' . ($profil->nama_sekolah ?? 'Web Schools'))
 
@@ -19,7 +19,6 @@
                             @if (!empty($berita->gambar) && file_exists(public_path('uploads/berita/' . $berita->gambar)))
                                 <img src="{{ asset('uploads/berita/' . $berita->gambar) }}"
                                     class="card-img-top object-fit-cover" style="height: 220px;" alt="Berita">
-                                    alt="{{ $berita->judul }}">
                             @endif
                         </div>
                         <div class="card-body p-4 d-flex flex-column">

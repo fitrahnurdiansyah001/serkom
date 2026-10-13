@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', 'Program Unggulan - ' . ($profil->nama_sekolah ?? 'SDIT Al-Hikmah'))
 
@@ -27,10 +27,9 @@
                 <h4 class="fw-bold text-body mb-2">{{ $program->nama_program ?? $program->judul }}</h4>
                 
                 <p class="text-secondary small flex-grow-1" style="line-height: 1.7;">
-                    {{ Str::limit($program->deskripsi ?? $program->keterangan, 95) }}
+                    {{ $program->deskripsi ?? $program->keterangan, 95}}
                 </p>
 
-                <!-- Tombol Detail / Aksi (Opsional jika ada halaman detail) -->
                 <div class="mt-4 pt-3 border-top">
                     <span class="badge rounded-pill px-3 py-2 fw-semibold" style="background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
                         <i class="bi bi-check-circle-fill me-1"></i> Program Aktif

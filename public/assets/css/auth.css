@@ -1,0 +1,173 @@
+:root {
+    --primary-green: #0F8B44;
+    --accent-green: #0c7338;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background: #f1f5f9;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+html[data-bs-theme="dark"] body {
+    background: #090d16;
+}
+
+.login-wrapper {
+    width: 100%;
+    max-width: 960px;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 1.75rem;
+    box-shadow: 0 25px 50px -12px rgba(15, 139, 68, 0.12);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+html[data-bs-theme="dark"] .login-wrapper {
+    background-color: #111827;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+}
+
+.login-left-pane {
+    background: linear-gradient(135deg, #0F8B44 0%, #0c7338 100%);
+    color: #ffffff;
+    padding: 3rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.login-right-pane {
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.form-control {
+    background-color: #f8f9fa;
+    border-color: #e2e8f0;
+    color: #212529;
+    padding: 0.8rem 1rem;
+    font-size: 0.95rem;
+}
+
+html[data-bs-theme="dark"] .form-control {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #f9fafb;
+}
+
+.form-control:focus {
+    background-color: #ffffff;
+    border-color: #0F8B44;
+    box-shadow: 0 0 0 4px rgba(15, 139, 68, 0.15);
+}
+
+html[data-bs-theme="dark"] .form-control:focus {
+    background-color: #111827;
+    border-color: #0F8B44;
+    color: #ffffff;
+}
+
+.input-group-text {
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+    color: #64748b;
+}
+
+html[data-bs-theme="dark"] .input-group-text {
+    background-color: #1f2937;
+    border-color: #374151;
+    color: #9ca3af;
+}
+
+.custom-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+html[data-bs-theme="dark"] .custom-label {
+    color: #cbd5e1;
+}
+
+.custom-title {
+    color: #0f172a;
+}
+
+html[data-bs-theme="dark"] .custom-title {
+    color: #ffffff;
+}
+
+.btn-custom-green {
+    background-color: #0F8B44;
+    border-color: #0F8B44;
+    color: #ffffff;
+    padding: 0.8rem;
+    font-weight: 600;
+    border-radius: 0.75rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+}
+
+.btn-custom-green:hover {
+    background-color: #0c7338;
+    border-color: #0c7338;
+    color: #ffffff;
+}
+
+.theme-toggle-fixed {
+    position: fixed;
+    top: 25px;
+    right: 25px;
+    background: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.2s ease;
+    z-index: 10;
+    color: #334155;
+}
+
+html[data-bs-theme="dark"] .theme-toggle-fixed {
+    background: #1f2937;
+    border-color: rgba(255, 255, 255, 0.1);
+    color: #f9fafb;
+}
+
+.theme-toggle-fixed:hover {
+    transform: scale(1.05);
+}
+
+
+.btn-kembali {
+    background-color: #0F8B44;
+    color: white;
+    transition: all 0.3s ease-in-out;
+    /* Membuat animasi halus */
+}
+
+.btn-kembali:hover {
+    background-color: #0c7338;
+    /* Warna hijau yang sedikit lebih gelap */
+    color: white;
+    transform: translateY(-2px);
+    /* Efek tombol sedikit terangkat */
+    box-shadow: 0 6px 12px rgba(15, 139, 68, 0.3) !important;
+    /* Bayangan lebih tebal */
+}

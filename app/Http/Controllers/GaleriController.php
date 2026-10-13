@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Galeri;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class GaleriController extends Controller
 {
@@ -35,11 +36,13 @@ class GaleriController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'judul' => 'required|string|max:50',
+            'judul'      => 'required|string|max:50|unique:galeris,judul',
             'keterangan' => 'nullable|string',
-            'kategori' => 'required|in:Foto,Video',
-            'tanggal' => 'required|date',
-            'file' => 'required|file|mimes:jpeg,png,jpg,gif,mp4,webm|max:10240'
+            'kategori'   => 'required|in:Foto,Video',
+            'tanggal'    => 'required|date',
+            'file'       => 'required|file|mimes:jpeg,png,jpg,gif,mp4,webm|max:10240'
+        ], [
+            'judul.unique' => 'Judul galeri ini sudah ada, silakan gunakan judul yang lain.'
         ]);
 
         $fileName = null;
@@ -63,7 +66,7 @@ class GaleriController extends Controller
 
         Galeri::create([
             'judul'      => $request->judul,
-            'slug'       => $slugBaru, // Menyimpan slug ke database
+            'slug'       => $slugBaru,
             'keterangan' => $request->keterangan,
             'kategori'   => $request->kategori,
             'tanggal'    => $request->tanggal,
@@ -76,13 +79,22 @@ class GaleriController extends Controller
     public function update(Request $request, string $id)
     {
         $galeri = Galeri::findOrFail($id);
+        $primaryKeyName = $galeri->getKeyName();
 
+        // Validasi unique dengan ignore data yang sedang diedit
         $request->validate([
-            'judul' => 'required|string|max:50',
+            'judul'      => [
+                'required',
+                'string',
+                'max:50',
+                Rule::unique('galeris', 'judul')->ignore($id, $primaryKeyName)
+            ],
             'keterangan' => 'nullable|string',
-            'kategori' => 'required|in:Foto,Video',
-            'tanggal' => 'required|date',
-            'file' => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,webm|max:10240'
+            'kategori'   => 'required|in:Foto,Video',
+            'tanggal'    => 'required|date',
+            'file'       => 'nullable|file|mimes:jpeg,png,jpg,gif,mp4,webm|max:10240'
+        ], [
+            'judul.unique' => 'Judul galeri ini sudah digunakan oleh data galeri lain.'
         ]);
 
         if ($request->hasFile('file')) {
@@ -106,7 +118,8 @@ class GaleriController extends Controller
 
         if ($galeri->judul != $request->judul) {
             $slugBaru = Str::slug($request->judul);
-            if(Galeri::where('slug', $slugBaru)->where('id_galeri', '!=', $galeri->id_galeri)->exists()){
+            // Pengecekan slug menggunakan nama kolom primary key dinamis
+            if(Galeri::where('slug', $slugBaru)->where($primaryKeyName, '!=', $id)->exists()){
                  $slugBaru = $slugBaru . '-' . time();
             }
             $galeri->slug = $slugBaru;
@@ -125,7 +138,6 @@ class GaleriController extends Controller
     {
         $galeri = Galeri::findOrFail($id);
 
-        // Hapus file fisik
         if ($galeri->file && file_exists(public_path('uploads/galeri/' . $galeri->file))) {
             @unlink(public_path('uploads/galeri/' . $galeri->file));
         }

@@ -38,6 +38,9 @@ Route::get('/info-galeri/{slug}', [LandingController::class, 'detailGaleri'])->n
 
 Route::get('/info-program', [LandingController::class, 'program'])->name('landing.program');
 
+Route::get('/info-siswa', [LandingController::class, 'siswa'])->name('landing.siswa'); 
+Route::get('/info-profil', [LandingController::class, 'profil'])->name('landing.profil'); 
+
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');

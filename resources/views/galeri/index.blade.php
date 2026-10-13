@@ -68,9 +68,9 @@
     @endif
 
     @if ($errors->any())
-        <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm mb-4" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i> <strong>Gagal menyimpan data!</strong>
-            <ul class="mb-0 mt-2">
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong>Terjadi Kesalahan!</strong> Silakan periksa kembali isian Anda:
+            <ul class="mb-0 mt-1">
                 @foreach ($errors->all() as $error)
                     <li>{{ $error }}</li>
                 @endforeach

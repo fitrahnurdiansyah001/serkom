@@ -1,4 +1,4 @@
-@extends('landing.layouts')
+@extends('landing.layouts.layouts')
 
 @section('title', ($prestasi->nama_prestasi ?? $prestasi->judul) . ' - SDIT Al-Hikmah')
 

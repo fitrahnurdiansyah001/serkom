@@ -30,7 +30,6 @@ body {
     color: #ffffff;
 }
 
-/* Navbar Floating Modern dengan Glassmorphism & Border Lembut */
 .navbar-floating {
     background: #0F8B44;
     backdrop-filter: blur(16px);
@@ -91,7 +90,6 @@ body {
     }
 }
 
-/* Tombol Modern Berkeliling Halus */
 .btn-rounded {
     border-radius: 50px;
     padding: 10px 25px;
@@ -120,7 +118,6 @@ body {
     background-color: var(--primary-green) !important;
 }
 
-/* Kartu dengan Border Tipis dan Efek Melayang Premium */
 .card-modern {
     border: 1px solid rgba(226, 232, 240, 0.8);
     border-radius: 20px;
@@ -184,7 +181,8 @@ body {
     }
 }
 
-html, body {
+html,
+body {
     overflow-x: hidden;
     width: 100%;
     position: relative;

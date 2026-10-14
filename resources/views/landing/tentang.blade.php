@@ -3,7 +3,7 @@
 @section('title', 'Profil Sekolah - ' . ($profil->nama_sekolah ?? 'SDIT Al-Hikmah'))
 
 @section('content')
-<!-- HEADER BANNER PROFIL -->
+
 <section class="container py-5 mt-2">
     <div class="row align-items-center g-5">
         <div class="col-lg-6" data-aos="fade-right">
@@ -27,7 +27,6 @@
     </div>
 </section>
 
-<!-- STATISTIK TOTAL (SISWA, GURU, EKSKUL, PRESTASI) -->
 <section class="container py-4">
     <div class="row g-4 text-center">
         <!-- Total Siswa -->
@@ -65,7 +64,6 @@
     </div>
 </section>
 
-<!-- DETAIL VISI, MISI, & INFORMASI UMUM -->
 <section class="container py-5">
     <div class="row g-5">
         <!-- Kiri: Visi & Misi -->
@@ -85,7 +83,6 @@
             </div>
         </div>
 
-        <!-- Kanan: Informasi Kontak & Identitas -->
         <div class="col-lg-5" data-aos="fade-left">
             <div class="card card-modern p-4 p-md-5 border shadow-sm h-100 bg-white">
                 <h3 class="fw-bold text-body mb-4 border-bottom pb-3"><i class="bi bi-info-circle-fill me-2" style="color: #0F8B44;"></i> Identitas Sekolah</h3>

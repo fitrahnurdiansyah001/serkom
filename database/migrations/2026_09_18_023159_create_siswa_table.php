@@ -15,7 +15,6 @@ return new class extends Migration
             $table->uuid('id_siswa')->primary();
             $table->string('nisn', 10)->unique();
             $table->string('nama_siswa', 100);
-            $table->string('kelas', 255);
             $table->string('slug')->unique()->nullable();
             $table->string('kelas');
             $table->enum('jenis_kelamin', ['Laki-Laki', 'Perempuan']);

@@ -7,14 +7,12 @@
     <div class="row justify-content-center">
         <div class="col-lg-8" data-aos="fade-up">
             
-            <!-- Tombol Kembali -->
             <div class="mb-4">
                 <a href="{{ url('/info-ekskul') }}" class="btn rounded-pill px-4 fw-semibold btn-sm shadow-sm" style="border: 1px solid #0F8B44; color: #0F8B44;">
                     <i class="bi bi-arrow-left me-2"></i> Kembali ke Daftar Ekstrakurikuler
                 </a>
             </div>
 
-            <!-- Kartu Detail Ekskul -->
             <div class="card card-modern p-4 p-md-5 border shadow-sm bg-white">
                 <div class="d-flex align-items-center gap-3 mb-4">
                     <div class="rounded-circle p-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 60px; height: 60px; background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
@@ -33,8 +31,6 @@
                 </div>
 
                 <h1 class="fw-bold text-body mb-4">{{ $ekskul->nama_ekskul ?? $ekskul->nama }}</h1>
-
-                <!-- BAGIAN MENAMPILKAN FOTO / GAMBAR -->
                 @php
                     $fotoEkskul = $ekskul->foto ?? ($ekskul->gambar ?? ($ekskul->file ?? ($ekskul->image ?? ($ekskul->logo ?? null))));
                 @endphp
@@ -45,7 +41,7 @@
                             class="img-fluid rounded-4 shadow-sm w-100 object-fit-cover border" style="max-height: 420px;">
                     </div>
                 @else
-                    <!-- Placeholder jika foto tidak ada di database atau folder -->
+    
                     <div class="bg-body-tertiary text-center py-5 rounded-4 mb-4 text-secondary border d-flex flex-column align-items-center justify-content-center"
                         style="height: 220px;">
                         <i class="bi bi-image fs-1 opacity-50 mb-2" style="color: #0F8B44;"></i>

@@ -13,7 +13,6 @@
     </p>
 </section>
 
-<!-- DAFTAR EKSKUL -->
 <section class="container pb-5 mb-5">
     <div class="row g-4">
         @forelse($ekskuls as $ekskul)
@@ -34,7 +33,6 @@
                     {{ Str::limit($ekskul->deskripsi ?? 'Kegiatan pembinaan siswa di luar jam pelajaran sekolah untuk mengembangkan potensi secara optimal.', 85) }}
                 </p>
 
-                <!-- Tombol Detail Ekskul -->
                 <div class="mt-4 pt-3 border-top">
                     <a href="{{ url('/info-ekskul/' . ($ekskul->slug ?? $ekskul->id_ekskul)) }}" class="btn btn-sm rounded-pill w-100 fw-semibold" style="border: 1px solid #0F8B44; color: #0F8B44;">
                         <i class="bi bi-eye me-1"></i> Lihat Detail & Jadwal

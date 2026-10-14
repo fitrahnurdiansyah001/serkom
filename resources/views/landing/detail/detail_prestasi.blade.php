@@ -44,7 +44,6 @@
                         </div>
                     @endif
 
-                    <!-- FOTO PRESTASI -->
                     @php
                         $fotoPrestasi = $prestasi->foto ?? ($prestasi->gambar ?? ($prestasi->file ?? null));
                     @endphp

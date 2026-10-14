@@ -16,20 +16,19 @@
                                 
                                 @if (isset($galeri->file) && file_exists(public_path('uploads/galeri/' . $galeri->file)))
                                     
-                                    {{-- Cek Kategori File --}}
+                        
                                     @if ($galeri->kategori == 'Video')
-                                        <!-- Thumbnail Video -->
+                        
                                         <div class="position-relative w-100 h-100 bg-dark">
                                             <video class="gallery-img w-100" style="object-fit: cover; height: 240px; opacity: 0.8;" muted>
                                                 <source src="{{ asset('uploads/galeri/' . $galeri->file) }}" type="video/mp4">
                                             </video>
-                                            <!-- Ikon Play di tengah -->
+                            
                                             <div class="position-absolute top-50 start-50 translate-middle text-white" style="z-index: 2;">
                                                 <i class="bi bi-play-circle-fill display-2 drop-shadow"></i>
                                             </div>
                                         </div>
                                     @else
-                                        <!-- Thumbnail Foto -->
                                         <img src="{{ asset('uploads/galeri/' . $galeri->file) }}"
                                             alt="{{ $galeri->judul ?? 'Galeri' }}" class="gallery-img w-100" style="object-fit: cover; height: 240px;">
                                     @endif

@@ -37,7 +37,6 @@
         </div>
     </section>
 
-    <!-- PENGUMUMAN -->
     @if (isset($pengumumans) && $pengumumans->count() > 0)
         <section class="container my-4">
             <div class="card border-0 shadow-sm rounded-4 text-white p-4 overflow-hidden position-relative"
@@ -76,7 +75,6 @@
         </section>
     @endif
 
-    <!-- PROGRAM UNGGULAN SEKOLAH (DARI DATABASE) -->
     <section class="container py-5">
         <div class="text-center mb-5" data-aos="fade-down">
             <span class="fw-bold small text-uppercase" style="color: #0F8B44;">Keunggulan Kami</span>
@@ -96,7 +94,6 @@
                     </div>
                 </div>
             @empty
-                <!-- Fallback jika data program kosong di database -->
                 <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
                     <div class="card card-modern p-4 h-100 border text-center">
                         <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm"
@@ -134,7 +131,6 @@
         </div>
     </section>
 
-    <!-- PRESTASI & EKSKUL -->
     <section class="container py-4">
         <div class="row g-4">
             <div class="col-lg-6" data-aos="fade-right">
@@ -201,7 +197,6 @@
         </div>
     </section>
 
-    <!-- DATA GURU -->
     <section class="container py-5">
         <div class="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom" data-aos="fade-down">
             <div>
@@ -239,7 +234,6 @@
         </div>
     </section>
 
-    <!-- BERITA TERBARU -->
     <section class="container py-5">
         <div class="d-flex justify-content-between align-items-end mb-4 pb-2 border-bottom" data-aos="fade-down">
             <div>
@@ -278,7 +272,6 @@
         </div>
     </section>
 
-    <!-- GALERI (DIPERBAIKI) -->
     @if (isset($galeris) && $galeris->count() > 0)
         <section class="container py-5 mb-5">
             <div class="text-center mb-5" data-aos="fade-down">

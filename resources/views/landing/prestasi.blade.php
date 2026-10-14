@@ -13,7 +13,6 @@
         </p>
     </section>
 
-    <!-- DAFTAR PRESTASI -->
     <section class="container pb-5 mb-5">
         <div class="row g-4">
             @forelse($prestasis as $prestasi)

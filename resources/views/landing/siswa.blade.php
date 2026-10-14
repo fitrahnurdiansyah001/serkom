@@ -9,11 +9,11 @@
             $kelas = \App\Models\kelas::all();
         @endphp
 
-        <div class="row">
+        <div class="row g-4">
             @forelse ($siswas as $siswa)
                 <div class="col-lg-4 col-md-6" data-aos="fade-up">
                     <div class="card card-modern p-4 h-100 border shadow-sm bg-white d-flex flex-column text-center">
-                        <div class="mb-3 mx-auto d-flex align-items-center justify-content-center"
+                        <div class="mb-3 my-3 mx-auto d-flex align-items-center justify-content-center"
                             style="width: 80px; height: 80px; border-radius: 50%; background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
                             <i class="bi bi-person-fill" style="font-size: 40px;"></i>
                         </div>
@@ -26,7 +26,7 @@
                         <div class="mt-4 pt-3 border-top">
                             <span class="badge rounded-pill px-3 py-2 fw-semibold"
                                 style="background-color: rgba(15, 139, 68, 0.1); color: #0F8B44;">
-                                <i class="bi bi-check-circle-fill me-1"></i> Kelas: {{ $siswa->kelas ? $siswa->kelas->kode_kelas : 'Belum masuk kelas' }}</span>
+                                <i class="bi bi-check-circle-fill me-1"></i> Kelas: {{ $siswa->kelas_id ? optional($siswa->kelas)->kode_kelas : 'Belum masuk kelas' }}</span>
                         </div>
                     </div>
                 </div>

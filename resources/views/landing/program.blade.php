@@ -14,7 +14,6 @@
     </p>
 </section>
 
-<!-- DAFTAR PROGRAM -->
 <section class="container pb-5 mb-5">
     <div class="row g-4">
         @forelse($programs ?? [] as $program)
